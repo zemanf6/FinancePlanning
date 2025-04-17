@@ -1,4 +1,7 @@
-﻿using FinancePlanning.Domain.Entities;
+﻿using FinancePlanning.Application;
+using FinancePlanning.Application.Interfaces;
+using FinancePlanning.Application.Managers;
+using FinancePlanning.Domain.Entities;
 using FinancePlanning.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -19,11 +22,13 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     options.SignIn.RequireConfirmedAccount = false;
 })
 .AddRoles<IdentityRole>()
-.AddEntityFrameworkStores<ApplicationDbContext>()
-.AddDefaultUI();
+.AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+
+builder.Services.AddScoped<IAccountManager, AccountManager>();
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 var app = builder.Build();
 

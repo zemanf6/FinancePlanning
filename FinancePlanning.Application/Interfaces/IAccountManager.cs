@@ -1,19 +1,17 @@
-﻿using FinancePlanning.Application.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using FinancePlanning.Application.DTOs;
+using FinancePlanning.Domain.Entities;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace FinancePlanning.Application.Interfaces
+namespace FinancePlanning.Application.Interfaces;
+
+public interface IAccountManager
 {
-    public interface IAccountManager
-    {
-        Task<(bool Success, IEnumerable<string> Errors)> RegisterAsync(RegisterViewModel model);
-        Task<(bool Success, string? Error)> LoginAsync(string email, string password, bool rememberMe);
-        Task LogoutAsync();
-        Task<ProfileViewModel?> GetUserProfileAsync(ClaimsPrincipal principal);
-        Task<bool> UpdateUserProfileAsync(ClaimsPrincipal principal, ProfileViewModel model);
-    }
+    Task<(bool Success, IEnumerable<string> Errors)> RegisterAsync(RegisterDto dto);
+    Task<(bool Success, string? Error)> LoginAsync(string email, string password, bool rememberMe);
+    Task LogoutAsync();
+    Task<ProfileDto?> GetUserProfileAsync(ClaimsPrincipal principal);
+    Task<bool> UpdateUserProfileAsync(ClaimsPrincipal principal, ProfileDto dto);
+    Task<ApplicationUser?> FindByEmailAsync(string email);
+    Task<string> GeneratePasswordResetTokenAsync(ApplicationUser user);
+    Task<(bool Success, IEnumerable<string> Errors)> ResetPasswordAsync(ResetPasswordDto dto);
 }

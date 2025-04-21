@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FinancePlanning.Application.DTOs;
 using FinancePlanning.Application.ViewModels;
 using FinancePlanning.Domain.Entities;
 using FinancePlanning.Presentation.ViewModels;
@@ -12,12 +13,18 @@ namespace FinancePlanning.Application
 {
     public class MappingProfile: Profile
     {
-        public MappingProfile() 
+        public MappingProfile()
         {
-            CreateMap<ApplicationUser, ProfileViewModel>().ReverseMap();
+            CreateMap<ApplicationUser, ProfileDto>().ReverseMap();
 
-            CreateMap<RegisterViewModel, ApplicationUser>()
-            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email));
+            CreateMap<ProfileDto, ProfileViewModel>().ReverseMap();
+
+            CreateMap<RegisterViewModel, RegisterDto>();
+
+            CreateMap<RegisterDto, ApplicationUser>()
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email));
+
+            CreateMap<ResetPasswordViewModel, ResetPasswordDto>();
         }
     }
 }

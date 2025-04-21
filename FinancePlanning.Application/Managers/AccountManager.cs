@@ -1,74 +1,91 @@
 ﻿using AutoMapper;
+using FinancePlanning.Application.DTOs;
 using FinancePlanning.Application.Interfaces;
 using FinancePlanning.Domain.Entities;
-using FinancePlanning.Application.ViewModels;
 using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace FinancePlanning.Application.Managers
+namespace FinancePlanning.Application.Managers;
+
+public class AccountManager : IAccountManager
 {
-    public class AccountManager : IAccountManager
+    private readonly UserManager<ApplicationUser> userManager;
+    private readonly SignInManager<ApplicationUser> signInManager;
+    private readonly IMapper mapper;
+
+    public AccountManager(UserManager<ApplicationUser> userManager,
+                          SignInManager<ApplicationUser> signInManager,
+                          IMapper mapper)
     {
-        private readonly UserManager<ApplicationUser> userManager;
-        private readonly SignInManager<ApplicationUser> signInManager;
-        private readonly IMapper mapper;
+        this.userManager = userManager;
+        this.signInManager = signInManager;
+        this.mapper = mapper;
+    }
 
-        public AccountManager(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IMapper mapper)
+    public async Task<(bool Success, string? Error)> LoginAsync(string email, string password, bool rememberMe)
+    {
+        var result = await signInManager.PasswordSignInAsync(email, password, rememberMe, false);
+        return result.Succeeded ? (true, null) : (false, "Invalid login attempt.");
+    }
+
+    public async Task LogoutAsync()
+    {
+        await signInManager.SignOutAsync();
+    }
+
+    public async Task<(bool Success, IEnumerable<string> Errors)> RegisterAsync(RegisterDto dto)
+    {
+        var user = mapper.Map<ApplicationUser>(dto);
+        var result = await userManager.CreateAsync(user, dto.Password);
+
+        if (result.Succeeded)
         {
-            this.userManager = userManager;
-            this.signInManager = signInManager;
-            this.mapper = mapper;
+            await signInManager.SignInAsync(user, false);
+            return (true, Enumerable.Empty<string>());
         }
 
-        public async Task<(bool Success, string? Error)> LoginAsync(string email, string password, bool rememberMe)
-        {
-            var result = await signInManager.PasswordSignInAsync(email, password, rememberMe, false);
-            return result.Succeeded ? (true, null) : (false, "Invalid login attempt.");
-        }
+        return (false, result.Errors.Select(e => e.Description));
+    }
 
-        public async Task LogoutAsync()
-        {
-            await signInManager.SignOutAsync();
-        }
+    public async Task<ProfileDto?> GetUserProfileAsync(ClaimsPrincipal principal)
+    {
+        var user = await userManager.GetUserAsync(principal);
+        if (user == null) return null;
 
-        public async Task<(bool Success, IEnumerable<string> Errors)> RegisterAsync(RegisterViewModel model)
-        {
-            var user = mapper.Map<ApplicationUser>(model);
+        return mapper.Map<ProfileDto>(user);
+    }
 
-            var result = await userManager.CreateAsync(user, model.Password);
-            if (result.Succeeded)
-            {
-                await signInManager.SignInAsync(user, false);
-                return (true, Enumerable.Empty<string>());
-            }
+    public async Task<bool> UpdateUserProfileAsync(ClaimsPrincipal principal, ProfileDto dto)
+    {
+        var user = await userManager.GetUserAsync(principal);
+        if (user == null) return false;
 
-            return (false, result.Errors.Select(e => e.Description));
-        }
+        mapper.Map(dto, user);
 
-        public async Task<ProfileViewModel?> GetUserProfileAsync(ClaimsPrincipal principal)
-        {
-            var user = await userManager.GetUserAsync(principal);
-            if (user == null)
-                return null;
+        var result = await userManager.UpdateAsync(user);
+        return result.Succeeded;
+    }
 
-            return mapper.Map<ProfileViewModel>(user);
-        }
+    public async Task<ApplicationUser?> FindByEmailAsync(string email)
+    {
+        return await userManager.FindByEmailAsync(email);
+    }
 
-        public async Task<bool> UpdateUserProfileAsync(ClaimsPrincipal principal, ProfileViewModel model)
-        {
-            var user = await userManager.GetUserAsync(principal);
-            if (user == null)
-                return false;
+    public async Task<string> GeneratePasswordResetTokenAsync(ApplicationUser user)
+    {
+        return await userManager.GeneratePasswordResetTokenAsync(user);
+    }
 
-            mapper.Map(model, user);
+    public async Task<(bool Success, IEnumerable<string> Errors)> ResetPasswordAsync(ResetPasswordDto dto)
+    {
+        var user = await userManager.FindByEmailAsync(dto.Email);
+        if (user == null)
+            return (false, new[] { "User not found." });
 
-            var result = await userManager.UpdateAsync(user);
-            return result.Succeeded;
-        }
+        var result = await userManager.ResetPasswordAsync(user, dto.Token, dto.NewPassword);
+
+        return result.Succeeded
+            ? (true, Enumerable.Empty<string>())
+            : (false, result.Errors.Select(e => e.Description));
     }
 }

@@ -20,8 +20,4 @@
     <ProjectReference Include="..\FinancePlanning.Infrastructure\FinancePlanning.Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Areas\" />
-  </ItemGroup>
-
 </Project>

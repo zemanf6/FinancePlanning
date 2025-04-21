@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace FinancePlanning.Presentation.ViewModels
+namespace FinancePlanning.Presentation.Areas.Auth.ViewModels
 {
     public class ForgotPasswordViewModel
     {

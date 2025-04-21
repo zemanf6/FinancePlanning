@@ -1,13 +1,13 @@
 ﻿using AutoMapper;
 using FinancePlanning.Application.DTOs;
 using FinancePlanning.Application.Interfaces;
-using FinancePlanning.Application.ViewModels;
-using FinancePlanning.Presentation.ViewModels;
+using FinancePlanning.Presentation.Areas.Auth.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FinancePlanning.Presentation.Controllers;
+namespace FinancePlanning.Presentation.Areas.Account.Controllers;
 
+[Area("Auth")]
 [Authorize]
 public class AccountController : Controller
 {
@@ -38,7 +38,7 @@ public class AccountController : Controller
         var (success, error) = await accountManager.LoginAsync(model.Email, model.Password, model.RememberMe);
 
         if (success)
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index", "Home", new { area = "" });
 
         ModelState.AddModelError(string.Empty, error ?? "Login failed.");
         return View(model);
@@ -63,7 +63,7 @@ public class AccountController : Controller
         var (success, errors) = await accountManager.RegisterAsync(dto);
 
         if (success)
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index", "Home", new { area = "" });
 
         foreach (var error in errors)
             ModelState.AddModelError(string.Empty, error);
@@ -76,7 +76,7 @@ public class AccountController : Controller
     public async Task<IActionResult> Logout()
     {
         await accountManager.LogoutAsync();
-        return RedirectToAction("Index", "Home");
+        return RedirectToAction("Index", "Home", new { area = "" });
     }
 
     [HttpGet]

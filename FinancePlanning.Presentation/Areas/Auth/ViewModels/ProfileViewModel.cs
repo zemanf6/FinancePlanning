@@ -1,9 +1,9 @@
 ﻿using FinancePlanning.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace FinancePlanning.Application.ViewModels
+namespace FinancePlanning.Presentation.Areas.Auth.ViewModels
 {
-    public class ProfileViewModel: IValidatableObject
+    public class ProfileViewModel : IValidatableObject
     {
         public string Email { get; set; } = string.Empty;
 

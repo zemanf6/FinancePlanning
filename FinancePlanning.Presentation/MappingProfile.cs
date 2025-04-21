@@ -1,8 +1,7 @@
 ﻿using AutoMapper;
 using FinancePlanning.Application.DTOs;
-using FinancePlanning.Application.ViewModels;
 using FinancePlanning.Domain.Entities;
-using FinancePlanning.Presentation.ViewModels;
+using FinancePlanning.Presentation.Areas.Auth.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;

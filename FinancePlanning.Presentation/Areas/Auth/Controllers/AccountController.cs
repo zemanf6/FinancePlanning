@@ -56,6 +56,9 @@ public class AccountController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Register(RegisterViewModel model)
     {
+        if (!model.AcceptPrivacyPolicy)
+            ModelState.AddModelError(nameof(model.AcceptPrivacyPolicy), "You must agree with the privacy policy.");
+
         if (!ModelState.IsValid)
             return View(model);
 
@@ -168,5 +171,27 @@ public class AccountController : Controller
             ModelState.AddModelError(string.Empty, error);
 
         return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteAccount()
+    {
+        var user = await accountManager.FindByEmailAsync(User.Identity!.Name!);
+        if (user == null)
+            return RedirectToAction("Index", "Home", new { area = "" });
+
+        await accountManager.DeleteUserAsync(user);
+
+        await accountManager.LogoutAsync();
+        TempData["Message"] = "Your account has been permanently deleted.";
+        return RedirectToAction("Index", "Home", new { area = "" });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> DownloadProfileData()
+    {
+        var (fileBytes, fileName) = await accountManager.ExportUserDataAsync(User);
+        return File(fileBytes, "application/json", fileName);
     }
 }

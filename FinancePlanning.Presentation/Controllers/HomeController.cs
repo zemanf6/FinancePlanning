@@ -30,3 +30,5 @@ namespace FinancePlanning.Presentation.Controllers
         }
     }
 }
+// TODO:
+// - Nevím jestli je nutný vìdìt FirstName, LastName, možná proti GDPR

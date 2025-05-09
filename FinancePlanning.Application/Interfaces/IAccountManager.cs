@@ -14,4 +14,6 @@ public interface IAccountManager
     Task<ApplicationUser?> FindByEmailAsync(string email);
     Task<string> GeneratePasswordResetTokenAsync(ApplicationUser user);
     Task<(bool Success, IEnumerable<string> Errors)> ResetPasswordAsync(ResetPasswordDto dto);
+    Task DeleteUserAsync(ApplicationUser user);
+    Task<(byte[] FileBytes, string FileName)> ExportUserDataAsync(ClaimsPrincipal principal);
 }

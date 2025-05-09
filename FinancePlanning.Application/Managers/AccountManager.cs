@@ -4,6 +4,8 @@ using FinancePlanning.Application.Interfaces;
 using FinancePlanning.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
+using System.Text.Json;
+using System.Text;
 
 namespace FinancePlanning.Application.Managers;
 
@@ -62,6 +64,11 @@ public class AccountManager : IAccountManager
 
         mapper.Map(dto, user);
 
+        user.EmailConfirmed = true;
+        user.NormalizedEmail = userManager.NormalizeEmail(user.Email);
+        user.UserName = user.Email;
+        user.NormalizedUserName = userManager.NormalizeName(user.Email);
+
         var result = await userManager.UpdateAsync(user);
         return result.Succeeded;
     }
@@ -87,5 +94,29 @@ public class AccountManager : IAccountManager
         return result.Succeeded
             ? (true, Enumerable.Empty<string>())
             : (false, result.Errors.Select(e => e.Description));
+    }
+
+    public async Task DeleteUserAsync(ApplicationUser user)
+    {
+        await userManager.DeleteAsync(user);
+    }
+
+    public async Task<(byte[] FileBytes, string FileName)> ExportUserDataAsync(ClaimsPrincipal principal)
+    {
+        var user = await userManager.GetUserAsync(principal);
+        if (user == null)
+            throw new InvalidOperationException("User not found.");
+
+        var dto = mapper.Map<ProfileDto>(user);
+
+        var json = JsonSerializer.Serialize(dto, new JsonSerializerOptions
+        {
+            WriteIndented = true
+        });
+
+        var fileName = $"profile-data-{user.Email}.json";
+        var fileBytes = Encoding.UTF8.GetBytes(json);
+
+        return (fileBytes, fileName);
     }
 }

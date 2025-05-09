@@ -37,6 +37,13 @@
         <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
     </div>
 
+    <div class="mb-3 form-check">
+        <input asp-for="AcceptPrivacyPolicy" class="form-check-input" />
+        <label asp-for="AcceptPrivacyPolicy" class="form-check-label">
+            I agree with the <a asp-area="" asp-controller="Home" asp-action="Privacy" target="_blank">Privacy Policy</a>.
+        </label>
+    </div>
+
     <button type="submit" class="btn btn-primary">Register</button>
 </form>
 

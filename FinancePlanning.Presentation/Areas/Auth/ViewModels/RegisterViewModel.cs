@@ -16,5 +16,8 @@ namespace FinancePlanning.Presentation.Areas.Auth.ViewModels
         [Compare("Password")]
         [Display(Name = "Confirm Password")]
         public string ConfirmPassword { get; set; } = string.Empty;
+
+        [Display(Name = "I agree with the Privacy Policy")]
+        public bool AcceptPrivacyPolicy { get; set; }
     }
 }

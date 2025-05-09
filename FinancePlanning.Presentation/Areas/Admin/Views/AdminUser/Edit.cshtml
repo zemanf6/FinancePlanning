@@ -1,0 +1,50 @@
+﻿@using FinancePlanning.Application.DTOs
+@model FinancePlanning.Application.DTOs.AdminUserDto
+@{
+    ViewData["Title"] = "Editace uživatele";
+    var allRoles = ViewBag.AllRoles as List<string> ?? new List<string>();
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Editace uživatele</h2>
+
+    <form asp-action="Edit" method="post">
+        <input type="hidden" asp-for="Id" />
+
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label">Email</label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="FirstName" class="form-label">Jméno</label>
+            <input asp-for="FirstName" class="form-control" />
+            <span asp-validation-for="FirstName" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="LastName" class="form-label">Příjmení</label>
+            <input asp-for="LastName" class="form-control" />
+            <span asp-validation-for="LastName" class="text-danger"></span>
+        </div>
+
+        @if (User.IsInRole("Admin"))
+        {
+            <div class="mb-3">
+                <label class="form-label">Role</label><br />
+                @foreach (var role in allRoles)
+                {
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" name="selectedRoles" value="@role"
+                            @(Model.Roles.Contains(role) ? "checked" : "") />
+                        <label class="form-check-label">@role</label>
+                    </div>
+                }
+            </div>
+        }
+
+        <button type="submit" class="btn btn-success">Uložit změny</button>
+        <a asp-action="Index" class="btn btn-secondary ms-2">Zpět</a>
+    </form>
+</div>

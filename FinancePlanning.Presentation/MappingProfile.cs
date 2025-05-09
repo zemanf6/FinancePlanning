@@ -24,6 +24,7 @@ namespace FinancePlanning.Application
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email));
 
             CreateMap<ResetPasswordViewModel, ResetPasswordDto>();
+            CreateMap<ApplicationUser, AdminUserDto>().ReverseMap();
         }
     }
 }

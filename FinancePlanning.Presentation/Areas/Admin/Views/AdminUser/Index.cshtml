@@ -1,0 +1,45 @@
+﻿@using FinancePlanning.Application.DTOs
+@model List<FinancePlanning.Application.DTOs.AdminUserDto>
+
+@{
+    ViewData["Title"] = "Správa uživatelů";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Správa uživatelů</h2>
+
+    <table class="table table-striped table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>Email</th>
+                <th>Jméno</th>
+                <th>Role</th>
+                <th>Akce</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    <td>@user.Email</td>
+                    <td>@user.FirstName @user.LastName</td>
+                    <td>@string.Join(", ", user.Roles)</td>
+                    <td>
+                        @if (!(user.Roles.Contains("Admin") || user.Roles.Contains("Manager") && User.IsInRole("Manager")))
+                        {
+                            <a class="btn btn-sm btn-primary me-2" asp-action="Edit" asp-route-id="@user.Id">Edit</a>
+                        }
+
+                        @if (!(user.Roles.Contains("Admin") || (user.Roles.Contains("Manager") && User.IsInRole("Manager"))))
+                        {
+                            <a class="btn btn-sm btn-danger" asp-action="Delete" asp-route-id="@user.Id"
+                               onclick="return confirm('Opravdu chcete tohoto uživatele smazat?');">
+                                Smazat
+                            </a>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -29,6 +29,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IAccountManager, AccountManager>();
 builder.Services.AddScoped<IAdminUserManager, AdminUserManager>();
+builder.Services.AddScoped<ISimpleInterestCalculatorManager, SimpleInterestCalculatorManager>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 var app = builder.Build();

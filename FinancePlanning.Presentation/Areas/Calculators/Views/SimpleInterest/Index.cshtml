@@ -1,5 +1,155 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model FinancePlanning.Presentation.Areas.Calculators.ViewModels.SimpleInterestViewModel
+
 @{
+    ViewData["Title"] = "Simple Interest Calculator";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Simple Interest Calculator</h2>
+
+    <form asp-action="Index" method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="row gy-3">
+            <div class="col-md-4">
+                <label asp-for="Principal" class="form-label">Principal Amount</label>
+                <input asp-for="Principal" class="form-control rounded" type="number" step="0.01" placeholder="Enter principal" />
+                <span asp-validation-for="Principal" class="text-danger small"></span>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="InterestRate" class="form-label">Interest Rate (%)</label>
+                <input asp-for="InterestRate" class="form-control rounded" type="number" step="0.001" placeholder="e.g. 5.5" />
+                <span asp-validation-for="InterestRate" class="text-danger small"></span>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="Frequency" class="form-label">Interest Frequency</label>
+                <select asp-for="Frequency" class="form-select rounded" asp-items="Html.GetEnumSelectList<FinancePlanning.Application.DTOs.InterestFrequency>()">
+                    <option value="">-- Select Frequency --</option>
+                </select>
+                <span asp-validation-for="Frequency" class="text-danger small"></span>
+            </div>
+
+            <div class="col-md-8">
+                <label asp-for="Duration" class="form-label">Duration</label>
+                <input asp-for="Duration" class="form-control rounded" placeholder="e.g. 36" />
+                <span asp-validation-for="Duration" class="text-danger small"></span>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="Unit" class="form-label">Period Unit</label>
+                <select asp-for="Unit" class="form-select rounded" asp-items="Html.GetEnumSelectList<FinancePlanning.Application.DTOs.PeriodUnit>()"></select>
+                <span asp-validation-for="Unit" class="text-danger small"></span>
+            </div>
+        </div>
+
+        <div class="mt-4 d-flex justify-content-end">
+            <button type="submit" class="btn btn-success btn-lg shadow-sm">
+                <i class="bi bi-calculator"></i> Calculate
+            </button>
+        </div>
+    </form>
+
+    @if (Model.ChartData != null && Model.ChartData.Any())
+    {
+        <div id="results" class="mt-5">
+            <h4><i class="bi bi-bar-chart-line me-2"></i>Results</h4>
+
+            @if (Model.IsPartialYear)
+            {
+                <div class="alert alert-warning">
+                    The selected duration does not complete a full number of years. Results are displayed monthly for accuracy.
+                </div>
+            }
+
+            <div class="card border-primary mb-4">
+                <div class="card-body">
+                    <p class="card-text mb-1">
+                        <strong><i class="bi bi-wallet2"></i> Principal:</strong>
+                        <span class="fs-4">@Model.Principal.ToString("C")</span>
+                    </p>
+                    <p class="card-text mb-1">
+                        <strong><i class="bi bi-graph-up-arrow"></i> Total Interest:</strong>
+                        <span class="fs-4 text-success">@Model.CalculatedInterest.ToString("C")</span>
+                    </p>
+                    <p class="card-text">
+                        <strong><i class="bi bi-cash-coin"></i> Total Amount:</strong>
+                        <span class="fs-4 text-primary">@Model.TotalAmount.ToString("C")</span>
+                    </p>
+                </div>
+            </div>
+
+            <h5>Interest Over Time</h5>
+            <table class="table table-bordered table-striped table-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th>@(Model.ShowInYears ? "Year" : "Month")</th>
+                        <th>Accumulated Interest</th>
+                        <th>Total Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.ChartData)
+                    {
+                        <tr>
+                            <td>@row.Period</td>
+                            <td>@row.InterestAccumulated.ToString("C")</td>
+                            <td>@row.TotalAmount.ToString("C")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="row mt-5 gy-4">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">Interest vs Principal</div>
+                        <div class="card-body">
+                            <canvas id="pieChart" height="300" style="max-width: 100%"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">Interest Accumulation Over Time</div>
+                        <div class="card-body">
+                            <canvas id="barChart" height="300" style="max-width: 100%"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+    @using System.Text.Json
+
+    @{
+        var options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+    }
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        window.calculationData = {
+            principal: @Html.Raw(JsonSerializer.Serialize(Model.Principal)),
+            interest: @Html.Raw(JsonSerializer.Serialize(Model.CalculatedInterest)),
+            chartData: @Html.Raw(JsonSerializer.Serialize(Model.ChartData, options))
+        };
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const results = document.getElementById("results");
+            if (results) {
+                results.scrollIntoView({ behavior: "smooth" });
+            }
+        });
+    </script>
+    <script src="~/js/calculators/simpleInterest.js"></script>
 }

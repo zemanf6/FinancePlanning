@@ -34,5 +34,6 @@ namespace FinancePlanning.Presentation.Areas.Calculators.ViewModels
 
         public bool ShowInYears { get; set; }
         public bool IsPartialYear { get; set; }
+        public string SelectedCurrency { get; set; } = "USD";
     }
 }

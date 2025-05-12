@@ -3,8 +3,12 @@ using FinancePlanning.Application.Interfaces;
 using FinancePlanning.Application.Managers;
 using FinancePlanning.Domain.Entities;
 using FinancePlanning.Infrastructure;
+using FinancePlanning.Infrastructure.Interfaces;
+using FinancePlanning.Infrastructure.Services;
+using FinancePlanning.Infrastructure.Services.DTO;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +35,14 @@ builder.Services.AddScoped<IAccountManager, AccountManager>();
 builder.Services.AddScoped<IAdminUserManager, AdminUserManager>();
 builder.Services.AddScoped<ISimpleInterestCalculatorManager, SimpleInterestCalculatorManager>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
+
+
+var env = builder.Environment;
+var path = Path.Combine(env.ContentRootPath, "wwwroot", "data", "currencies.json");
+var json = File.ReadAllText(path);
+var currencies = JsonSerializer.Deserialize<Dictionary<string, CurrencyJsonDto>>(json)
+               ?? new Dictionary<string, CurrencyJsonDto>();
+builder.Services.AddSingleton<ICurrencyFormatter>(new CurrencyFormatter(currencies));
 
 var app = builder.Build();
 

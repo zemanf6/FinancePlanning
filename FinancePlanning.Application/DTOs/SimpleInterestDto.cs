@@ -21,6 +21,7 @@ namespace FinancePlanning.Application.DTOs
 
         public bool ShowInYears { get; set; }
         public bool IsPartialYear { get; set; }
+        public string SelectedCurrency { get; set; } = "USD";
     }
 
     public enum InterestFrequency

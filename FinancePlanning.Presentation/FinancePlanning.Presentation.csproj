@@ -20,4 +20,10 @@
     <ProjectReference Include="..\FinancePlanning.Infrastructure\FinancePlanning.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="wwwroot\data\currencies.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

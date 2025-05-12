@@ -4,6 +4,7 @@ using FinancePlanning.Application.Interfaces;
 using FinancePlanning.Presentation.Areas.Calculators.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace FinancePlanning.Presentation.Areas.Calculators.Controllers
 {
@@ -23,6 +24,17 @@ namespace FinancePlanning.Presentation.Areas.Calculators.Controllers
         [HttpGet]
         public IActionResult Index()
         {
+            // Pokud v TempData existují výsledky, zobrazíme je
+            if (TempData.ContainsKey("Result"))
+            {
+                var json = TempData["Result"] as string;
+                if (json != null)
+                {
+                    var resultViewModel = JsonSerializer.Deserialize<SimpleInterestViewModel>(json);
+                    return View(resultViewModel);
+                }
+            }
+
             return View(new SimpleInterestViewModel());
         }
 
@@ -37,7 +49,9 @@ namespace FinancePlanning.Presentation.Areas.Calculators.Controllers
             var result = calculator.Calculate(dto);
             var updatedViewModel = mapper.Map<SimpleInterestViewModel>(result);
 
-            return View(updatedViewModel);
+            TempData["Result"] = JsonSerializer.Serialize(updatedViewModel);
+
+            return RedirectToAction("Index");
         }
     }
 }

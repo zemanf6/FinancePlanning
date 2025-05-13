@@ -1,13 +1,13 @@
 ﻿@using FinancePlanning.Infrastructure.Interfaces
-@model IEnumerable<FinancePlanning.Domain.Entities.SavedSimpleInterest>
+@model IEnumerable<FinancePlanning.Domain.Entities.SavedCompoundInterest>
 @inject ICurrencyFormatter CurrencyFormatter
 
 @{
-    ViewData["Title"] = "Saved Simple Interest Calculations";
+    ViewData["Title"] = "Saved Compound Interest Calculations";
 }
 
 <div class="container mt-4">
-    <h2 class="mb-4">Saved Simple Interest Calculations</h2>
+    <h2 class="mb-4">Saved Compound Interest Calculations</h2>
 
     @if (TempData["Success"] is string successMessage)
     {
@@ -36,15 +36,14 @@
     }
     else
     {
-
         <div class="table-responsive">
             <table class="table table-bordered table-striped align-middle">
                 <thead class="table-light">
                     <tr>
                         <th>Principal</th>
-                        <th>Interest Rate (%)</th>
+                        <th>Rate (%)</th>
                         <th>Duration</th>
-                        <th>Frequency</th>
+                        <th>Compoundings/Yr</th>
                         <th>Interest</th>
                         <th>Total</th>
                         <th>Note</th>
@@ -59,7 +58,7 @@
                             <td>@CurrencyFormatter.Format(item.Principal, item.SelectedCurrency)</td>
                             <td>@item.InterestRate</td>
                             <td>@item.Duration @item.Unit</td>
-                            <td>@item.Frequency</td>
+                            <td>@item.CompoundingPerYear</td>
                             <td>@CurrencyFormatter.Format(item.CalculatedInterest, item.SelectedCurrency)</td>
                             <td>@CurrencyFormatter.Format(item.TotalAmount, item.SelectedCurrency)</td>
                             <td>

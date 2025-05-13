@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace FinancePlanning.Domain.Entities
 {
-    public class SavedSimpleInterest
+    public class SavedCompoundInterest
     {
         public int Id { get; set; }
 
@@ -31,12 +31,16 @@ namespace FinancePlanning.Domain.Entities
         public InterestFrequency Frequency { get; set; }
 
         [Required]
+        public int CompoundingPerYear { get; set; }
+
+        [Required]
         public string SelectedCurrency { get; set; } = "USD";
 
         public decimal CalculatedInterest { get; set; }
         public decimal TotalAmount { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
         public string? Note { get; set; }
     }
 }

@@ -12,6 +12,7 @@ namespace FinancePlanning.Infrastructure
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public DbSet<SavedSimpleInterest> SavedSimpleInterests { get; set; }
+        public DbSet<SavedCompoundInterest> SavedCompoundInterests { get; set; }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
@@ -22,6 +23,14 @@ namespace FinancePlanning.Infrastructure
             base.OnModelCreating(builder);
 
             builder.Entity<SavedSimpleInterest>(entity =>
+            {
+                entity.Property(e => e.Principal).HasPrecision(18, 3);
+                entity.Property(e => e.InterestRate).HasPrecision(18, 3);
+                entity.Property(e => e.CalculatedInterest).HasPrecision(18, 3);
+                entity.Property(e => e.TotalAmount).HasPrecision(18, 3);
+            });
+
+            builder.Entity<SavedCompoundInterest>(entity =>
             {
                 entity.Property(e => e.Principal).HasPrecision(18, 3);
                 entity.Property(e => e.InterestRate).HasPrecision(18, 3);

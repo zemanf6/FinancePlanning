@@ -3,69 +3,59 @@ using FinancePlanning.Application.DTOs;
 using FinancePlanning.Application.Interfaces;
 using FinancePlanning.Presentation.Areas.Calculators.ViewModels;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Composition;
 using System.Text.Json;
 
 namespace FinancePlanning.Presentation.Areas.Calculators.Controllers
 {
     [Area("Calculators")]
-    public class SimpleInterestController : Controller
+    public class CompoundInterestController : Controller
     {
-        private readonly IInterestCalculatorManager<SimpleInterestDto> _calculator;
+        private readonly IInterestCalculatorManager<CompoundInterestDto> _calculator;
+        private readonly ICompoundInterestStorageManager _storageManager;
         private readonly IMapper _mapper;
-        private readonly ISimpleInterestStorageManager _storageManager;
 
-        public SimpleInterestController(IInterestCalculatorManager<SimpleInterestDto> calculator, IMapper mapper, ISimpleInterestStorageManager storageManager)
+        public CompoundInterestController(
+            IInterestCalculatorManager<CompoundInterestDto> calculator,
+            ICompoundInterestStorageManager storageManager,
+            IMapper mapper)
         {
             _calculator = calculator;
-            _mapper = mapper;
             _storageManager = storageManager;
+            _mapper = mapper;
         }
 
         [HttpGet]
         public IActionResult Index()
         {
-            if (TempData.ContainsKey("Result"))
-            {
-                var json = TempData["Result"] as string;
-                if (json != null)
-                {
-                    var resultViewModel = JsonSerializer.Deserialize<SimpleInterestViewModel>(json);
-                    return View(resultViewModel);
-                }
-            }
-
-            return View(new SimpleInterestViewModel());
+            var viewModel = LoadFromTempData() ?? new CompoundInterestViewModel();
+            return View(viewModel);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Index(SimpleInterestViewModel viewModel)
+        public IActionResult Index(CompoundInterestViewModel viewModel)
         {
             if (!ModelState.IsValid)
                 return View(viewModel);
 
-            var dto = _mapper.Map<SimpleInterestDto>(viewModel);
+            var dto = _mapper.Map<CompoundInterestDto>(viewModel);
             var result = _calculator.Calculate(dto);
-            var updatedViewModel = _mapper.Map<SimpleInterestViewModel>(result);
+            var updatedViewModel = _mapper.Map<CompoundInterestViewModel>(result);
 
-            TempData["Result"] = JsonSerializer.Serialize(updatedViewModel);
-
+            SaveToTempData(updatedViewModel);
             return RedirectToAction("Index");
         }
 
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SaveCalculation(SimpleInterestViewModel viewModel)
+        public async Task<IActionResult> SaveCalculation(CompoundInterestViewModel viewModel)
         {
             if (!ModelState.IsValid)
                 return RedirectToAction("Index");
 
-            var dto = _mapper.Map<SimpleInterestDto>(viewModel);
-
+            var dto = _mapper.Map<CompoundInterestDto>(viewModel);
             await _storageManager.SaveCalculationAsync(dto, User);
 
             TempData["Success"] = "Calculation was saved successfully.";
@@ -89,9 +79,8 @@ namespace FinancePlanning.Presentation.Areas.Calculators.Controllers
             if (dto == null)
                 return RedirectToAction("Saved");
 
-            var viewModel = _mapper.Map<SimpleInterestViewModel>(dto);
-            TempData["Result"] = JsonSerializer.Serialize(viewModel);
-            TempData["TriggerAutoCalculate"] = "true";
+            var viewModel = _mapper.Map<CompoundInterestViewModel>(dto);
+            SaveToTempData(viewModel);
 
             return RedirectToAction("Index");
         }
@@ -114,6 +103,16 @@ namespace FinancePlanning.Presentation.Areas.Calculators.Controllers
             await _storageManager.DeleteAllAsync(User);
             TempData["Success"] = "All calculations were deleted.";
             return RedirectToAction("Saved");
+        }
+        private void SaveToTempData(CompoundInterestViewModel model)
+        {
+            TempData["Result"] = JsonSerializer.Serialize(model);
+        }
+        private CompoundInterestViewModel? LoadFromTempData()
+        {
+            if (TempData["Result"] is string json)
+                return JsonSerializer.Deserialize<CompoundInterestViewModel>(json);
+            return null;
         }
     }
 }

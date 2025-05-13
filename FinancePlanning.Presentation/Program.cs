@@ -1,4 +1,5 @@
 ﻿using FinancePlanning.Application;
+using FinancePlanning.Application.DTOs;
 using FinancePlanning.Application.Interfaces;
 using FinancePlanning.Application.Managers;
 using FinancePlanning.Domain.Entities;
@@ -40,7 +41,10 @@ builder.Services.AddRazorPages();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IAccountManager, AccountManager>();
 builder.Services.AddScoped<IAdminUserManager, AdminUserManager>();
-builder.Services.AddScoped<ISimpleInterestCalculatorManager, SimpleInterestCalculatorManager>();
+builder.Services.AddScoped<IInterestCalculatorManager<CompoundInterestDto>, CompoundInterestCalculatorManager>();
+builder.Services.AddScoped<IInterestCalculatorManager<SimpleInterestDto>, SimpleInterestCalculatorManager>();
+builder.Services.AddScoped<ICompoundInterestStorageManager, CompoundInterestStorageManager>();
+builder.Services.AddScoped<ICompoundInterestCalculationRepository, CompoundInterestCalculationRepository>();
 builder.Services.AddScoped<ISimpleInterestStorageManager, SimpleInterestStorageManager>();
 builder.Services.AddScoped<ISimpleInterestCalculationRepository, SimpleInterestCalculationRepository>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));

@@ -2,6 +2,7 @@
     initCurrencyDropdown();
     scrollToResultsIfAvailable();
     renderCharts();
+    initTooltips();
 });
 
 function initCurrencyDropdown() {
@@ -40,20 +41,26 @@ function scrollToResultsIfAvailable() {
 
 function renderCharts() {
     const data = window.calculationData;
-    if (!data) return;
+    if (!data || !data.chartData || data.chartData.length === 0) return;
 
     const { principal, interest, chartData } = data;
-    if (!principal || !interest || !chartData) return;
+
+    if (!principal || !interest || !Array.isArray(chartData)) return;
 
     renderPieChart(principal, interest);
     renderBarChart(principal, chartData);
 }
 
 function renderPieChart(principal, interest) {
-    const ctx = document.getElementById('pieChart')?.getContext('2d');
-    if (!ctx) return;
+    const container = document.getElementById('pieChartContainer');
+    if (!container) return;
 
-    new Chart(ctx, {
+    container.innerHTML = '';
+    const canvas = document.createElement('canvas');
+    canvas.height = 300;
+    container.appendChild(canvas);
+
+    new Chart(canvas.getContext('2d'), {
         type: 'pie',
         data: {
             labels: ['Principal', 'Interest'],
@@ -61,19 +68,28 @@ function renderPieChart(principal, interest) {
                 data: [principal, interest],
                 backgroundColor: ['#0d6efd', '#dc3545']
             }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
         }
     });
 }
 
 function renderBarChart(principal, chartData) {
-    const ctx = document.getElementById('barChart')?.getContext('2d');
-    if (!ctx) return;
+    const container = document.getElementById('barChartContainer');
+    if (!container) return;
 
-    const labels = chartData.map(x => "Period " + x.period);
+    container.innerHTML = '';
+    const canvas = document.createElement('canvas');
+    canvas.height = 300;
+    container.appendChild(canvas);
+
+    const labels = chartData.map(x => `Period ${x.period}`);
     const principalData = chartData.map(() => principal);
     const interestData = chartData.map(x => x.interestAccumulated);
 
-    new Chart(ctx, {
+    new Chart(canvas.getContext('2d'), {
         type: 'bar',
         data: {
             labels: labels,
@@ -94,10 +110,18 @@ function renderBarChart(principal, chartData) {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             scales: {
                 x: { stacked: true },
                 y: { stacked: true, beginAtZero: true }
             }
         }
+    });
+}
+
+function initTooltips() {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(tooltipTriggerEl => {
+        new bootstrap.Tooltip(tooltipTriggerEl);
     });
 }

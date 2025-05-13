@@ -1,4 +1,4 @@
-﻿@model FinancePlanning.Presentation.Areas.Calculators.ViewModels.SimpleInterestViewModel
+﻿@model FinancePlanning.Presentation.Areas.Calculators.ViewModels.CompoundInterestViewModel
 @inject ICurrencyFormatter CurrencyFormatter
 @using FinancePlanning.Infrastructure.Interfaces
 @using System.Text.Json
@@ -6,15 +6,12 @@
 @using System.Globalization
 
 @{
-    ViewData["Title"] = "Simple Interest Calculator";
-    var options = new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            };
+    ViewData["Title"] = "Compound Interest Calculator";
+    var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 }
 
 <div class="container mt-4">
-    <h2 class="mb-4">Simple Interest Calculator</h2>
+    <h2 class="mb-4">Compound Interest Calculator</h2>
 
     @if (TempData["Success"] is string successMessage)
     {
@@ -64,11 +61,9 @@
                         <span asp-validation-for="InterestRate" class="text-danger small"></span>
                     </div>
                     <div class="col-md-6">
-                        <label asp-for="Frequency" class="form-label">Interest Frequency</label>
-                        <select asp-for="Frequency" class="form-select" asp-items="Html.GetEnumSelectList<InterestFrequency>()">
-                            <option value="">-- Select Frequency --</option>
-                        </select>
-                        <span asp-validation-for="Frequency" class="text-danger small"></span>
+                        <label asp-for="CompoundingPerYear" class="form-label">Compoundings per Year</label>
+                        <input asp-for="CompoundingPerYear" class="form-control" placeholder="e.g. 12" />
+                        <span asp-validation-for="CompoundingPerYear" class="text-danger small"></span>
                     </div>
                 </div>
             </div>
@@ -79,7 +74,7 @@
                     <div class="col-md-6">
                         <label asp-for="Duration" class="form-label">Duration</label>
                         <div class="input-group">
-                            <input asp-for="Duration" class="form-control" placeholder="e.g. 36" />
+                            <input asp-for="Duration" class="form-control" placeholder="e.g. 10" />
                             <select asp-for="Unit" class="form-select" asp-items="Html.GetEnumSelectList<PeriodUnit>()" style="max-width: 10rem;"></select>
                         </div>
                         <div class="d-flex justify-content-between">
@@ -102,13 +97,6 @@
     {
         <div id="results" class="mt-5">
             <h4><i class="bi bi-bar-chart-line me-2"></i>Results</h4>
-
-            @if (Model.IsPartialYear)
-            {
-                <div class="alert alert-warning">
-                    The selected duration does not complete a full number of years. Results are displayed monthly for accuracy.
-                </div>
-            }
 
             <div class="card border-primary mb-4">
                 <div class="card-body">
@@ -162,32 +150,32 @@
                     </div>
                 </div>
             </div>
+
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <form asp-action="SaveCalculation" method="post" class="mt-3">
+                    @Html.AntiForgeryToken()
+
+                    @Html.HiddenFor(m => m.Principal)
+                    @Html.HiddenFor(m => m.InterestRate)
+                    @Html.HiddenFor(m => m.Duration)
+                    @Html.HiddenFor(m => m.Unit)
+                    @Html.HiddenFor(m => m.CompoundingPerYear)
+                    @Html.HiddenFor(m => m.SelectedCurrency)
+                    @Html.HiddenFor(m => m.CalculatedInterest)
+                    @Html.HiddenFor(m => m.TotalAmount)
+
+                    <div class="mb-3">
+                        <label for="note" class="form-label">Note (optional)</label>
+                        <input name="Note" id="note" class="form-control" maxlength="100" placeholder="Note (Optional)" />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Save this calculation
+                    </button>
+                </form>
+            }
         </div>
-
-        @if (User.Identity?.IsAuthenticated == true && Model.ChartData?.Any() == true)
-        {
-            <form asp-action="SaveCalculation" method="post" class="mt-3">
-                @Html.AntiForgeryToken()
-
-                <input type="hidden" name="Principal" value="@Model.Principal" />
-                <input type="hidden" name="InterestRate" value="@Model.InterestRate" />
-                <input type="hidden" name="Duration" value="@Model.Duration" />
-                <input type="hidden" name="Unit" value="@Model.Unit" />
-                <input type="hidden" name="Frequency" value="@Model.Frequency" />
-                <input type="hidden" name="SelectedCurrency" value="@Model.SelectedCurrency" />
-                <input type="hidden" name="CalculatedInterest" value="@Model.CalculatedInterest" />
-                <input type="hidden" name="TotalAmount" value="@Model.TotalAmount" />
-
-                <div class="mb-3">
-                    <label for="note" class="form-label">Note (optional)</label>
-                    <input name="Note" id="note" class="form-control" maxlength="100" placeholder="Note (Optional)" />
-                </div>
-
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-save"></i> Save this calculation
-                </button>
-            </form>
-        }
     }
 </div>
 
@@ -199,9 +187,9 @@
         window.calculationData = {
             principal: @Html.Raw(JsonSerializer.Serialize(Model.Principal)),
             interest: @Html.Raw(JsonSerializer.Serialize(Model.CalculatedInterest)),
-            chartData: @Html.Raw(JsonSerializer.Serialize(Model.ChartData, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }))
+            chartData: @Html.Raw(JsonSerializer.Serialize(Model.ChartData ?? new(), options))
                 };
         window.autoCalculateAfterLoad = @((TempData["Result"] != null).ToString().ToLower());
     </script>
-    <script src="~/js/calculators/calculatorResults.js"></script>
+    <script src="~/js/calculators/simpleInterest.js"></script>
 }

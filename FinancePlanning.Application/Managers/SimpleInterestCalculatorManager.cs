@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace FinancePlanning.Application.Managers
 {
-    public class SimpleInterestCalculatorManager : ISimpleInterestCalculatorManager
+    public class SimpleInterestCalculatorManager : IInterestCalculatorManager<SimpleInterestDto>
     {
         private readonly IMapper _mapper;
 

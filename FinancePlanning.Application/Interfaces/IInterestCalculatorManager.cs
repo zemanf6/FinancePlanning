@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace FinancePlanning.Application.Interfaces
 {
-    public interface ISimpleInterestCalculatorManager
+    public interface IInterestCalculatorManager<TDto>
     {
-        SimpleInterestDto Calculate(SimpleInterestDto input);
+        TDto Calculate(TDto dto);
     }
 }

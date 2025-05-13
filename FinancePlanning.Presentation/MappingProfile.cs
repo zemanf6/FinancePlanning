@@ -28,6 +28,8 @@ namespace FinancePlanning.Application
             CreateMap<ApplicationUser, AdminUserDto>().ReverseMap();
             CreateMap<SimpleInterestViewModel, SimpleInterestDto>().ReverseMap();
             CreateMap<SavedSimpleInterest, SimpleInterestDto>().ReverseMap();
+            CreateMap<CompoundInterestViewModel, CompoundInterestDto>().ReverseMap();
+            CreateMap<SavedCompoundInterest, CompoundInterestDto>().ReverseMap();
         }
     }
 }

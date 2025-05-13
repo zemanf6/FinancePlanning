@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace FinancePlanning.Presentation.Areas.Calculators.ViewModels
 {
-    public class SimpleInterestViewModel
+    public class CompoundInterestViewModel
     {
         [Required]
         [Display(Name = "Principal Amount")]
@@ -21,20 +21,24 @@ namespace FinancePlanning.Presentation.Areas.Calculators.ViewModels
         [Range(1, 100, ErrorMessage = "Enter a duration between 1 and 100")]
         public int Duration { get; set; }
 
-        [Display(Name = "Interest Frequency")]
-        public InterestFrequency Frequency { get; set; } = InterestFrequency.Yearly;
-
         [Required]
         [Display(Name = "Duration Unit")]
         public PeriodUnit Unit { get; set; } = PeriodUnit.Years;
 
+        [Display(Name = "Interest Frequency")]
+        public InterestFrequency Frequency { get; set; } = InterestFrequency.Yearly;
+
+        [Required]
+        [Display(Name = "Compoundings per Year")]
+        [Range(1, 365, ErrorMessage = "Must be between 1 and 365")]
+        public int CompoundingPerYear { get; set; } = 1;
+
         public decimal CalculatedInterest { get; set; }
         public decimal TotalAmount { get; set; }
 
-        public List<SimpleInterestStep>? ChartData { get; set; }
+        public List<CompoundInterestStep>? ChartData { get; set; }
 
         public bool ShowInYears { get; set; }
-        public bool IsPartialYear { get; set; }
         public string SelectedCurrency { get; set; } = "USD";
 
         [MaxLength(100)]

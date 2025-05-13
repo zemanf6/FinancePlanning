@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FinancePlanning.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,18 +24,6 @@ namespace FinancePlanning.Application.DTOs
         public bool IsPartialYear { get; set; }
         public string SelectedCurrency { get; set; } = "USD";
     }
-
-    public enum InterestFrequency
-    {
-        Monthly,
-        Yearly
-    }
-    public enum PeriodUnit
-    {
-        Months,
-        Years
-    }
-
 
     public class SimpleInterestStep
     {

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FinancePlanning.Application.DTOs;
 using FinancePlanning.Application.Interfaces;
+using FinancePlanning.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,16 +12,16 @@ namespace FinancePlanning.Application.Managers
 {
     public class SimpleInterestCalculatorManager : ISimpleInterestCalculatorManager
     {
-        private readonly IMapper mapper;
+        private readonly IMapper _mapper;
 
         public SimpleInterestCalculatorManager(IMapper mapper)
         {
-            this.mapper = mapper;
+            _mapper = mapper;
         }
 
         public SimpleInterestDto Calculate(SimpleInterestDto model)
         {
-            var dto = mapper.Map<SimpleInterestDto>(model);
+            var dto = _mapper.Map<SimpleInterestDto>(model);
             InitializeCalculationMetadata(dto);
 
             if (dto.ShowInYears)

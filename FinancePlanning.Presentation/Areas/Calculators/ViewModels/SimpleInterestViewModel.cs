@@ -1,4 +1,5 @@
 ﻿using FinancePlanning.Application.DTOs;
+using FinancePlanning.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace FinancePlanning.Presentation.Areas.Calculators.ViewModels

@@ -11,13 +11,13 @@ namespace FinancePlanning.Presentation.Areas.Account.Controllers;
 [Authorize]
 public class AccountController : Controller
 {
-    private readonly IAccountManager accountManager;
-    private readonly IMapper mapper;
+    private readonly IAccountManager _accountManager;
+    private readonly IMapper _mapper;
 
     public AccountController(IAccountManager accountManager, IMapper mapper)
     {
-        this.accountManager = accountManager;
-        this.mapper = mapper;
+        _accountManager = accountManager;
+        _mapper = mapper;
     }
 
     [AllowAnonymous]
@@ -35,7 +35,7 @@ public class AccountController : Controller
         if (!ModelState.IsValid)
             return View(model);
 
-        var (success, error) = await accountManager.LoginAsync(model.Email, model.Password, model.RememberMe);
+        var (success, error) = await _accountManager.LoginAsync(model.Email, model.Password, model.RememberMe);
 
         if (success)
             return RedirectToAction("Index", "Home", new { area = "" });
@@ -62,8 +62,8 @@ public class AccountController : Controller
         if (!ModelState.IsValid)
             return View(model);
 
-        var dto = mapper.Map<RegisterDto>(model);
-        var (success, errors) = await accountManager.RegisterAsync(dto);
+        var dto = _mapper.Map<RegisterDto>(model);
+        var (success, errors) = await _accountManager.RegisterAsync(dto);
 
         if (success)
             return RedirectToAction("Index", "Home", new { area = "" });
@@ -78,18 +78,18 @@ public class AccountController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
-        await accountManager.LogoutAsync();
+        await _accountManager.LogoutAsync();
         return RedirectToAction("Index", "Home", new { area = "" });
     }
 
     [HttpGet]
     public async Task<IActionResult> Profile()
     {
-        var dto = await accountManager.GetUserProfileAsync(User);
+        var dto = await _accountManager.GetUserProfileAsync(User);
         if (dto is null)
             return NotFound();
 
-        var vm = mapper.Map<ProfileViewModel>(dto);
+        var vm = _mapper.Map<ProfileViewModel>(dto);
         return View(vm);
     }
 
@@ -100,8 +100,8 @@ public class AccountController : Controller
         if (!ModelState.IsValid)
             return View(model);
 
-        var dto = mapper.Map<ProfileDto>(model);
-        var success = await accountManager.UpdateUserProfileAsync(User, dto);
+        var dto = _mapper.Map<ProfileDto>(model);
+        var success = await _accountManager.UpdateUserProfileAsync(User, dto);
 
         if (success)
             ViewData["Message"] = "Profile updated successfully";
@@ -126,7 +126,7 @@ public class AccountController : Controller
         if (!ModelState.IsValid)
             return View(model);
 
-        var user = await accountManager.FindByEmailAsync(model.Email);
+        var user = await _accountManager.FindByEmailAsync(model.Email);
         if (user == null)
         {
             TempData["Message"] = "If your email exists, you will receive a reset link.";
@@ -134,7 +134,7 @@ public class AccountController : Controller
         }
 
         // For testing
-        var token = await accountManager.GeneratePasswordResetTokenAsync(user);
+        var token = await _accountManager.GeneratePasswordResetTokenAsync(user);
         var callbackUrl = Url.Action("ResetPassword", "Account", new { email = user.Email, token }, Request.Scheme);
 
         TempData["Message"] = $"Password reset link: {callbackUrl}";
@@ -158,8 +158,8 @@ public class AccountController : Controller
         if (!ModelState.IsValid)
             return View(model);
 
-        var dto = mapper.Map<ResetPasswordDto>(model);
-        var (success, errors) = await accountManager.ResetPasswordAsync(dto);
+        var dto = _mapper.Map<ResetPasswordDto>(model);
+        var (success, errors) = await _accountManager.ResetPasswordAsync(dto);
 
         if (success)
         {
@@ -177,13 +177,13 @@ public class AccountController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteAccount()
     {
-        var user = await accountManager.FindByEmailAsync(User.Identity!.Name!);
+        var user = await _accountManager.FindByEmailAsync(User.Identity!.Name!);
         if (user == null)
             return RedirectToAction("Index", "Home", new { area = "" });
 
-        await accountManager.DeleteUserAsync(user);
+        await _accountManager.DeleteUserAsync(user);
 
-        await accountManager.LogoutAsync();
+        await _accountManager.LogoutAsync();
         TempData["Message"] = "Your account has been permanently deleted.";
         return RedirectToAction("Index", "Home", new { area = "" });
     }
@@ -191,7 +191,13 @@ public class AccountController : Controller
     [HttpGet]
     public async Task<IActionResult> DownloadProfileData()
     {
-        var (fileBytes, fileName) = await accountManager.ExportUserDataAsync(User);
+        var (fileBytes, fileName) = await _accountManager.ExportUserDataAsync(User);
         return File(fileBytes, "application/json", fileName);
+    }
+
+    [HttpGet]
+    public IActionResult AccessDenied()
+    {
+        return View();
     }
 }

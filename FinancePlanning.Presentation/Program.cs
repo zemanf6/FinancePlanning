@@ -4,6 +4,7 @@ using FinancePlanning.Application.Managers;
 using FinancePlanning.Domain.Entities;
 using FinancePlanning.Infrastructure;
 using FinancePlanning.Infrastructure.Interfaces;
+using FinancePlanning.Infrastructure.Repositories;
 using FinancePlanning.Infrastructure.Services;
 using FinancePlanning.Infrastructure.Services.DTO;
 using Microsoft.AspNetCore.Identity;
@@ -28,12 +29,20 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<ApplicationDbContext>();
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Auth/Account/Login";
+    options.AccessDeniedPath = "/Auth/Account/AccessDenied";
+});
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IAccountManager, AccountManager>();
 builder.Services.AddScoped<IAdminUserManager, AdminUserManager>();
 builder.Services.AddScoped<ISimpleInterestCalculatorManager, SimpleInterestCalculatorManager>();
+builder.Services.AddScoped<ISimpleInterestStorageManager, SimpleInterestStorageManager>();
+builder.Services.AddScoped<ISimpleInterestCalculationRepository, SimpleInterestCalculationRepository>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 

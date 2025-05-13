@@ -27,6 +27,7 @@ namespace FinancePlanning.Application
             CreateMap<ResetPasswordViewModel, ResetPasswordDto>();
             CreateMap<ApplicationUser, AdminUserDto>().ReverseMap();
             CreateMap<SimpleInterestViewModel, SimpleInterestDto>().ReverseMap();
+            CreateMap<SavedSimpleInterest, SimpleInterestDto>().ReverseMap();
         }
     }
 }

@@ -11,9 +11,23 @@ namespace FinancePlanning.Infrastructure
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
+        public DbSet<SavedSimpleInterest> SavedSimpleInterests { get; set; }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
+        }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.Entity<SavedSimpleInterest>(entity =>
+            {
+                entity.Property(e => e.Principal).HasPrecision(18, 3);
+                entity.Property(e => e.InterestRate).HasPrecision(18, 3);
+                entity.Property(e => e.CalculatedInterest).HasPrecision(18, 3);
+                entity.Property(e => e.TotalAmount).HasPrecision(18, 3);
+            });
         }
     }
 }

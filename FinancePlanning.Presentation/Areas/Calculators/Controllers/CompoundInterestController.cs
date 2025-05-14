@@ -28,8 +28,25 @@ namespace FinancePlanning.Presentation.Areas.Calculators.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            var viewModel = LoadFromTempData() ?? new CompoundInterestViewModel();
-            return View(viewModel);
+            if (TempData.ContainsKey("Result"))
+            {
+                var json = TempData["Result"] as string;
+                if (json != null)
+                {
+                    var model = JsonSerializer.Deserialize<CompoundInterestViewModel>(json);
+
+                    if (model?.ChartData != null)
+                    {
+                        model.ChartData = JsonSerializer.Deserialize<List<InterestChartStep>>(
+                            JsonSerializer.Serialize(model.ChartData)
+                        )?.Cast<object>().ToList();
+                    }
+
+                    return View(model);
+                }
+            }
+
+            return View(new CompoundInterestViewModel());
         }
 
         [HttpPost]
@@ -43,7 +60,12 @@ namespace FinancePlanning.Presentation.Areas.Calculators.Controllers
             var result = _calculator.Calculate(dto);
             var updatedViewModel = _mapper.Map<CompoundInterestViewModel>(result);
 
-            SaveToTempData(updatedViewModel);
+            updatedViewModel.ChartData = result.ChartData
+                .Cast<InterestChartStep>()
+                .Cast<object>()
+                .ToList();
+
+            TempData["Result"] = JsonSerializer.Serialize(updatedViewModel);
             return RedirectToAction("Index");
         }
 
@@ -80,8 +102,13 @@ namespace FinancePlanning.Presentation.Areas.Calculators.Controllers
                 return RedirectToAction("Saved");
 
             var viewModel = _mapper.Map<CompoundInterestViewModel>(dto);
-            SaveToTempData(viewModel);
 
+            viewModel.ChartData = dto.ChartData
+                .Cast<InterestChartStep>()
+                .Cast<object>()
+                .ToList();
+
+            TempData["Result"] = JsonSerializer.Serialize(viewModel);
             return RedirectToAction("Index");
         }
 
@@ -103,16 +130,6 @@ namespace FinancePlanning.Presentation.Areas.Calculators.Controllers
             await _storageManager.DeleteAllAsync(User);
             TempData["Success"] = "All calculations were deleted.";
             return RedirectToAction("Saved");
-        }
-        private void SaveToTempData(CompoundInterestViewModel model)
-        {
-            TempData["Result"] = JsonSerializer.Serialize(model);
-        }
-        private CompoundInterestViewModel? LoadFromTempData()
-        {
-            if (TempData["Result"] is string json)
-                return JsonSerializer.Deserialize<CompoundInterestViewModel>(json);
-            return null;
         }
     }
 }

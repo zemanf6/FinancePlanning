@@ -1,0 +1,35 @@
+﻿@model FinancePlanning.Presentation.Areas.Calculators.ViewModels.ICalculatorViewModel
+
+@if (User.Identity?.IsAuthenticated == true && Model.ChartData?.Any() == true)
+{
+    <form asp-action="SaveCalculation" method="post" class="mt-3">
+        @Html.AntiForgeryToken()
+
+        @Html.HiddenFor(m => m.Principal)
+        @Html.HiddenFor(m => m.InterestRate)
+        @Html.HiddenFor(m => m.Duration)
+        @Html.HiddenFor(m => m.Unit)
+        @Html.HiddenFor(m => m.SelectedCurrency)
+        @Html.HiddenFor(m => m.CalculatedInterest)
+        @Html.HiddenFor(m => m.TotalAmount)
+
+        @if (Model.CompoundingPerYear != null)
+        {
+            <input type="hidden" name="CompoundingPerYear" value="@Model.CompoundingPerYear" />
+        }
+
+        @if (Model.Frequency != null)
+        {
+            <input type="hidden" name="Frequency" value="@Model.Frequency" />
+        }
+
+        <div class="mb-3">
+            <label for="note" class="form-label">Note (optional)</label>
+            <input name="Note" id="note" class="form-control" maxlength="100" placeholder="Note (Optional)" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-save"></i> Save this calculation
+        </button>
+    </form>
+}

@@ -4,11 +4,6 @@ using FinancePlanning.Application.Interfaces;
 using FinancePlanning.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FinancePlanning.Application.Managers
 {

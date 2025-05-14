@@ -1,14 +1,9 @@
 ﻿using FinancePlanning.Domain.Enums;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FinancePlanning.Domain.Entities
 {
-    public class SavedSimpleInterest
+    public class SavedSimpleInterest: IUserOwnedEntity
     {
         public int Id { get; set; }
 

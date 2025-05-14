@@ -1,9 +1,4 @@
 ﻿using FinancePlanning.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FinancePlanning.Application.DTOs
 {
@@ -18,18 +13,11 @@ namespace FinancePlanning.Application.DTOs
         public decimal CalculatedInterest { get; set; }
         public decimal TotalAmount { get; set; }
 
-        public List<SimpleInterestStep> ChartData { get; set; } = new();
+        public List<InterestChartStep> ChartData { get; set; } = new();
 
         public bool ShowInYears { get; set; }
         public bool IsPartialYear { get; set; }
         public string SelectedCurrency { get; set; } = "USD";
         public string? Note { get; set; }
-    }
-
-    public class SimpleInterestStep
-    {
-        public int Period { get; set; }
-        public decimal InterestAccumulated { get; set; }
-        public decimal TotalAmount { get; set; }
     }
 }

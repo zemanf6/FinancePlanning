@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace FinancePlanning.Presentation.Areas.Calculators.ViewModels
 {
-    public class CompoundInterestViewModel
+    public class CompoundInterestViewModel : ICalculatorViewModel
     {
         [Required]
         [Display(Name = "Principal Amount")]
@@ -22,21 +22,18 @@ namespace FinancePlanning.Presentation.Areas.Calculators.ViewModels
         public int Duration { get; set; }
 
         [Required]
-        [Display(Name = "Duration Unit")]
-        public PeriodUnit Unit { get; set; } = PeriodUnit.Years;
-
-        [Display(Name = "Interest Frequency")]
-        public InterestFrequency Frequency { get; set; } = InterestFrequency.Yearly;
+        [Display(Name = "Compoundings per Year")]
+        [Range(1, 365, ErrorMessage = "Must be at least once per year")]
+        public int? CompoundingPerYear { get; set; } = 1;
 
         [Required]
-        [Display(Name = "Compoundings per Year")]
-        [Range(1, 365, ErrorMessage = "Must be between 1 and 365")]
-        public int CompoundingPerYear { get; set; } = 1;
+        [Display(Name = "Duration Unit")]
+        public PeriodUnit Unit { get; set; } = PeriodUnit.Years;
 
         public decimal CalculatedInterest { get; set; }
         public decimal TotalAmount { get; set; }
 
-        public List<CompoundInterestStep>? ChartData { get; set; }
+        public List<dynamic>? ChartData { get; set; }
 
         public bool ShowInYears { get; set; }
         public string SelectedCurrency { get; set; } = "USD";
@@ -44,5 +41,6 @@ namespace FinancePlanning.Presentation.Areas.Calculators.ViewModels
         [MaxLength(100)]
         [Display(Name = "Note (optional)")]
         public string? Note { get; set; }
+        public InterestFrequency? Frequency { get => null; set { } }
     }
 }

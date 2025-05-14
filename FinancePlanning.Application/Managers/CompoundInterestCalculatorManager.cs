@@ -1,11 +1,6 @@
 ﻿using AutoMapper;
 using FinancePlanning.Application.DTOs;
 using FinancePlanning.Application.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FinancePlanning.Application.Managers
 {
@@ -36,7 +31,7 @@ namespace FinancePlanning.Application.Managers
                 decimal total = result.Principal * compoundFactor;
                 decimal interest = total - result.Principal;
 
-                result.ChartData.Add(new CompoundInterestStep
+                result.ChartData.Add(new InterestChartStep
                 {
                     Period = i,
                     InterestAccumulated = interest,

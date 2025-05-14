@@ -2,11 +2,6 @@
 using FinancePlanning.Application.DTOs;
 using FinancePlanning.Application.Interfaces;
 using FinancePlanning.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FinancePlanning.Application.Managers
 {
@@ -51,7 +46,7 @@ namespace FinancePlanning.Application.Managers
                 decimal interest = dto.Principal * dto.InterestRate / 100 * year;
                 decimal total = dto.Principal + interest;
 
-                dto.ChartData.Add(new SimpleInterestStep
+                dto.ChartData.Add(new InterestChartStep
                 {
                     Period = year,
                     InterestAccumulated = interest,
@@ -72,7 +67,7 @@ namespace FinancePlanning.Application.Managers
                 decimal interest = dto.Principal * ratePerMonth * month;
                 decimal total = dto.Principal + interest;
 
-                dto.ChartData.Add(new SimpleInterestStep
+                dto.ChartData.Add(new InterestChartStep
                 {
                     Period = month,
                     InterestAccumulated = interest,

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace FinancePlanning.Presentation.Areas.Calculators.ViewModels
 {
-    public class SimpleInterestViewModel
+    public class SimpleInterestViewModel : ICalculatorViewModel
     {
         [Required]
         [Display(Name = "Principal Amount")]
@@ -22,7 +22,7 @@ namespace FinancePlanning.Presentation.Areas.Calculators.ViewModels
         public int Duration { get; set; }
 
         [Display(Name = "Interest Frequency")]
-        public InterestFrequency Frequency { get; set; } = InterestFrequency.Yearly;
+        public InterestFrequency? Frequency { get; set; } = InterestFrequency.Yearly;
 
         [Required]
         [Display(Name = "Duration Unit")]
@@ -31,7 +31,7 @@ namespace FinancePlanning.Presentation.Areas.Calculators.ViewModels
         public decimal CalculatedInterest { get; set; }
         public decimal TotalAmount { get; set; }
 
-        public List<SimpleInterestStep>? ChartData { get; set; }
+        public List<dynamic>? ChartData { get; set; }
 
         public bool ShowInYears { get; set; }
         public bool IsPartialYear { get; set; }
@@ -40,5 +40,7 @@ namespace FinancePlanning.Presentation.Areas.Calculators.ViewModels
         [MaxLength(100)]
         [Display(Name = "Note (optional)")]
         public string? Note { get; set; }
+
+        public int? CompoundingPerYear { get => null; set { } }
     }
 }

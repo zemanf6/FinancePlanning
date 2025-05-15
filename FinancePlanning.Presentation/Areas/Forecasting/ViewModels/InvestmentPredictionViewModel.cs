@@ -36,5 +36,28 @@ namespace FinancePlanning.Presentation.Areas.Forecasting.ViewModels
         public decimal TotalExpenseRatio { get; set; } = 0.0m;
 
         public SimulationResultDto? Result { get; set; }
+
+        public List<PortfolioItemViewModel> PortfolioItems { get; set; } = new()
+        {
+            new(), new(), new()
+        };
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            var activeItems = PortfolioItems
+                .Where(p => !string.IsNullOrWhiteSpace(p.AssetName) || p.Weight > 0 || p.ExpectedReturn != 0)
+                .ToList();
+
+            if (activeItems.Count == 0)
+            {
+                yield return new ValidationResult("At least one portfolio item is required.", new[] { nameof(PortfolioItems) });
+            }
+
+            var totalWeight = activeItems.Sum(p => p.Weight);
+            if (totalWeight != 100)
+            {
+                yield return new ValidationResult("Total portfolio weight must be exactly 100%.", new[] { nameof(PortfolioItems) });
+            }
+        }
     }
 }

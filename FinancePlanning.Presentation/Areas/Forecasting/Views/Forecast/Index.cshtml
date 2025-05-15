@@ -40,7 +40,10 @@
             </div>
 
             <div class="col-md-4">
-                <label asp-for="TotalExpenseRatio" class="form-label">TER (%)</label>
+                <label asp-for="TotalExpenseRatio" class="form-label">
+                    TER (%)
+                    <i class="bi bi-info-circle text-secondary" data-bs-toggle="tooltip" title="TER (Total Expense Ratio) reduces the expected return in this simulation. In real-world scenarios, actual fees may be calculated differently."></i>
+                </label>
                 <input asp-for="TotalExpenseRatio" class="form-control" type="number" step="0.001" />
                 <span asp-validation-for="TotalExpenseRatio" class="text-danger small"></span>
             </div>
@@ -69,6 +72,52 @@
                 <span asp-validation-for="SelectedCurrency" class="text-danger small"></span>
             </div>
 
+            <h5 class="mt-4">Portfolio Composition</h5>
+
+            @if (ViewData.ModelState.TryGetValue("PortfolioItems", out var entry) && entry.Errors.Count > 0)
+            {
+                <div class="alert alert-danger">
+                    @foreach (var error in entry.Errors)
+                    {
+                        <div>@error.ErrorMessage</div>
+                    }
+                </div>
+            }
+
+            <table class="table table-bordered table-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th>Asset Name</th>
+                        <th>Expected Return (%)</th>
+                        <th>Weight (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.PortfolioItems.Count; i++)
+                    {
+                        <tr>
+                            <td>
+                                <input class="form-control"
+                                       asp-for="PortfolioItems[i].AssetName"
+                                       type="text" />
+                                <span asp-validation-for="PortfolioItems[i].AssetName" class="text-danger small"></span>
+                            </td>
+                            <td>
+                                <input class="form-control" type="number" step="0.01"
+                                       asp-for="PortfolioItems[i].ExpectedReturn" />
+                                <span asp-validation-for="PortfolioItems[i].ExpectedReturn" class="text-danger small"></span>
+                            </td>
+                            <td>
+                                <input class="form-control" type="number" step="0.01"
+                                       asp-for="PortfolioItems[i].Weight" />
+                                <span asp-validation-for="PortfolioItems[i].Weight" class="text-danger small"></span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+
         </div>
 
         <div class="mt-4 d-flex justify-content-end">
@@ -86,10 +135,38 @@
 
             <div class="card border-primary mb-4">
                 <div class="card-body">
-                    <p class="mb-2"><strong>10th Percentile:</strong> @CurrencyFormatter.Format(Model.Result.Percentile10, Model.SelectedCurrency)</p>
-                    <p class="mb-2"><strong>Median (50th):</strong> @CurrencyFormatter.Format(Model.Result.Percentile50, Model.SelectedCurrency)</p>
-                    <p class="mb-2"><strong>90th Percentile:</strong> @CurrencyFormatter.Format(Model.Result.Percentile90, Model.SelectedCurrency)</p>
-                    <p class="mb-2"><strong>Average:</strong> @CurrencyFormatter.Format(Model.Result.AverageFinalValue, Model.SelectedCurrency)</p>
+                    <p class="mb-2">
+                        <strong>
+                            10th Percentile
+                            <i class="bi bi-info-circle text-secondary" data-bs-toggle="tooltip" title="10% of simulations ended below this value – it's a pessimistic scenario. In the chart, it's represented by a real trajectory closest to this value."></i>:
+                        </strong>
+                        @CurrencyFormatter.Format(Model.Result.Percentile10, Model.SelectedCurrency)
+                    </p>
+
+                    <p class="mb-2">
+                        <strong>
+                            Median (50th)
+                            <i class="bi bi-info-circle text-secondary" data-bs-toggle="tooltip" title="Half of the results are below this value. In the chart, the trajectory shown is the closest real simulation to this median."></i>:
+                        </strong>
+                        @CurrencyFormatter.Format(Model.Result.Percentile50, Model.SelectedCurrency)
+                    </p>
+
+                    <p class="mb-2">
+                        <strong>
+                            90th Percentile
+                            <i class="bi bi-info-circle text-secondary" data-bs-toggle="tooltip" title="90% of simulations ended below this value – it's an optimistic scenario. In the chart, it's a real trajectory closest to this value."></i>:
+                        </strong>
+                        @CurrencyFormatter.Format(Model.Result.Percentile90, Model.SelectedCurrency)
+                    </p>
+
+                    <p class="mb-2">
+                        <strong>
+                            Average
+                            <i class="bi bi-info-circle text-secondary" data-bs-toggle="tooltip" title="The arithmetic average of all simulation results. May differ from the median due to skewed distribution."></i>:
+                        </strong>
+                        @CurrencyFormatter.Format(Model.Result.AverageFinalValue, Model.SelectedCurrency)
+                    </p>
+
                     @if (Model.Result.TargetReachedProbability.HasValue)
                     {
                         <p class="mb-0"><strong>Chance to reach target:</strong> @Model.Result.TargetReachedProbability.Value.ToString("0.0")%</p>
@@ -107,14 +184,17 @@
                 </div>
                 <div class="col-lg-6">
                     <div class="card">
-                        <div class="card-header">Sample Trajectories</div>
+                        <div class="card-header">
+                            Sample Trajectories
+                            <i class="bi bi-info-circle text-secondary" data-bs-toggle="tooltip" title="These are actual simulation runs that are closest to the 10th, 50th and 90th percentile. They help visualize how the investment might evolve over time."></i>
+                        </div>
                         <div class="card-body" id="trajectoryContainer" style="height: 400px;"></div>
                     </div>
                 </div>
             </div>
 
             <div class="mt-4">
-                <h5>Scenario Summary</h5>
+                <h5>Detailed Percentiles</h5>
                 <table class="table table-bordered table-sm">
                     <thead class="table-light">
                         <tr>
@@ -124,21 +204,13 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="table-danger">
-                            <td>Very Pessimistic</td>
-                            <td>10th</td>
-                            <td>@CurrencyFormatter.Format(Model.Result.Percentile10, Model.SelectedCurrency)</td>
-                        </tr>
-                        <tr class="table-warning">
-                            <td>Median</td>
-                            <td>50th</td>
-                            <td>@CurrencyFormatter.Format(Model.Result.Percentile50, Model.SelectedCurrency)</td>
-                        </tr>
-                        <tr class="table-success">
-                            <td>Very Optimistic</td>
-                            <td>90th</td>
-                            <td>@CurrencyFormatter.Format(Model.Result.Percentile90, Model.SelectedCurrency)</td>
-                        </tr>
+                        <tr><td>Very Pessimistic</td><td>5th</td><td>@CurrencyFormatter.Format(Model.Result.Percentile5, Model.SelectedCurrency)</td></tr>
+                        <tr class="table-danger"><td>Pessimistic</td><td>10th</td><td>@CurrencyFormatter.Format(Model.Result.Percentile10, Model.SelectedCurrency)</td></tr>
+                        <tr><td>Below Median</td><td>25th</td><td>@CurrencyFormatter.Format(Model.Result.Percentile25, Model.SelectedCurrency)</td></tr>
+                        <tr class="table-info"><td>Median</td><td>50th</td><td>@CurrencyFormatter.Format(Model.Result.Percentile50, Model.SelectedCurrency)</td></tr>
+                        <tr><td>Above Median</td><td>75th</td><td>@CurrencyFormatter.Format(Model.Result.Percentile75, Model.SelectedCurrency)</td></tr>
+                        <tr class="table-success"><td>Optimistic</td><td>90th</td><td>@CurrencyFormatter.Format(Model.Result.Percentile90, Model.SelectedCurrency)</td></tr>
+                        <tr><td>Very Optimistic</td><td>95th</td><td>@CurrencyFormatter.Format(Model.Result.Percentile95, Model.SelectedCurrency)</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -150,6 +222,8 @@
     @await Html.PartialAsync("_ValidationScriptsPartial")
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0/dist/chartjs-plugin-annotation.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
     <script>
         window.predictionResult = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Result ?? new FinancePlanning.Application.DTOs.SimulationResultDto(), new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }));
 
@@ -166,10 +240,14 @@
                 btn.disabled = true;
                 spinner.classList.remove("d-none");
             });
+
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
         });
     </script>
     <script src="~/js/forecasting/investmentPrediction.js"></script>
 }
+
 
 @functions {
     public string GetBehavioralCommentary(FinancePlanning.Presentation.Areas.Forecasting.ViewModels.InvestmentPredictionViewModel model)

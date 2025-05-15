@@ -17,6 +17,7 @@ namespace FinancePlanning.Application.Managers
         {
             var finalValues = new List<decimal>();
             var sampleTrajectories = new List<List<decimal>>();
+            var sampleFinals = new List<decimal>(); // pro výběr z 10 trajektorií
             var sampleSize = 10;
 
             var (mean, stddev) = GetParameters(input.Strategy);
@@ -35,21 +36,47 @@ namespace FinancePlanning.Application.Managers
                     value += monthlyContribution;
                     var r = GetRandomReturn(mean, stddev, ter);
                     value *= (decimal)Math.Pow(1 + (double)r, 1.0 / 12.0);
+
                     if (month % 12 == 0)
                         trajectory.Add(value);
                 }
 
                 finalValues.Add(value);
+
                 if (sampleTrajectories.Count < sampleSize)
+                {
                     sampleTrajectories.Add(trajectory);
+                    sampleFinals.Add(value);
+                }
             }
 
             finalValues.Sort();
             var count = finalValues.Count;
-            var p10 = finalValues[(int)(0.1 * count)];
-            var p50 = finalValues[(int)(0.5 * count)];
-            var p90 = finalValues[(int)(0.9 * count)];
+
+            var p5 = finalValues[(int)(0.05 * count)];
+            var p10 = finalValues[(int)(0.10 * count)];
+            var p25 = finalValues[(int)(0.25 * count)];
+            var p50 = finalValues[(int)(0.50 * count)];
+            var p75 = finalValues[(int)(0.75 * count)];
+            var p90 = finalValues[(int)(0.90 * count)];
+            var p95 = finalValues[(int)(0.95 * count)];
             var avg = finalValues.Average();
+
+            Dictionary<string, List<decimal>> scenarioTrajectories = new();
+
+            if (sampleTrajectories.Count == sampleFinals.Count && sampleFinals.Count > 0)
+            {
+                int idxP10 = FindClosestIndex(sampleFinals, p10);
+                int idxP50 = FindClosestIndex(sampleFinals, p50);
+                int idxP90 = FindClosestIndex(sampleFinals, p90);
+
+                scenarioTrajectories = new Dictionary<string, List<decimal>>
+                {
+                    { "percentile10", sampleTrajectories[idxP10] },
+                    { "percentile50", sampleTrajectories[idxP50] },
+                    { "percentile90", sampleTrajectories[idxP90] }
+                };
+            }
 
             decimal? probability = null;
             if (input.TargetAmount.HasValue)
@@ -61,15 +88,19 @@ namespace FinancePlanning.Application.Managers
             return new SimulationResultDto
             {
                 FinalValues = finalValues,
-                SampleTrajectories = sampleTrajectories,
+                Percentile5 = p5,
                 Percentile10 = p10,
+                Percentile25 = p25,
                 Percentile50 = p50,
+                Percentile75 = p75,
                 Percentile90 = p90,
+                Percentile95 = p95,
                 AverageFinalValue = avg,
                 TargetReachedProbability = probability,
-                Recommendation = null
+                PercentileTrajectories = scenarioTrajectories
             };
         }
+
 
         private static (decimal mean, decimal stddev) GetParameters(InvestmentStrategy strategy)
         {
@@ -93,6 +124,21 @@ namespace FinancePlanning.Application.Managers
             var u1 = 1.0 - _random.NextDouble();
             var u2 = 1.0 - _random.NextDouble();
             return Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Cos(2.0 * Math.PI * u2);
+        }
+        private static int FindClosestIndex(List<decimal> sortedValues, decimal target)
+        {
+            decimal minDiff = decimal.MaxValue;
+            int closestIndex = 0;
+            for (int i = 0; i < sortedValues.Count; i++)
+            {
+                var diff = Math.Abs(sortedValues[i] - target);
+                if (diff < minDiff)
+                {
+                    minDiff = diff;
+                    closestIndex = i;
+                }
+            }
+            return closestIndex;
         }
     }
 }

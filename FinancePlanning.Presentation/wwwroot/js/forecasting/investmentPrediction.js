@@ -88,88 +88,133 @@ function renderHistogram() {
 
 function renderTrajectories() {
     const container = document.getElementById("trajectoryContainer");
-    if (!container || !window.predictionResult || !predictionResult.sampleTrajectories?.length) return;
+    if (!container || !window.predictionResult || !predictionResult.percentileTrajectories) return;
+
+    const trajectories = predictionResult.percentileTrajectories;
+    const labels = trajectories.percentile50.map((_, i) => `Year ${i + 1}`);
+
+    const datasets = [
+        {
+            label: "10th Percentile (Pessimistic)",
+            data: trajectories.percentile10,
+            borderColor: "#dc3545",
+            borderWidth: 2,
+            tension: 0.2,
+            fill: false,
+            pointRadius: 3,
+            pointHoverRadius: 6,
+            pointBackgroundColor: "white",
+            pointBorderWidth: 2
+        },
+        {
+            label: "50th Percentile (Median)",
+            data: trajectories.percentile50,
+            borderColor: "#fd7e14",
+            borderWidth: 2,
+            tension: 0.2,
+            fill: false,
+            pointRadius: 3,
+            pointHoverRadius: 6,
+            pointBackgroundColor: "white",
+            pointBorderWidth: 2
+        },
+        {
+            label: "90th Percentile (Optimistic)",
+            data: trajectories.percentile90,
+            borderColor: "#198754",
+            borderWidth: 2,
+            tension: 0.2,
+            fill: false,
+            pointRadius: 3,
+            pointHoverRadius: 6,
+            pointBackgroundColor: "white",
+            pointBorderWidth: 2
+        }
+    ];
 
     container.innerHTML = "";
     const canvas = document.createElement("canvas");
     container.appendChild(canvas);
 
-    const datasets = predictionResult.sampleTrajectories.map((trajectory, index) => ({
-        label: `Simulation ${index + 1}`,
-        data: trajectory,
-        fill: false,
-        borderColor: getColor(index),
-        tension: 0.2
-    }));
-
-    if (predictionResult.percentile10 && predictionResult.percentile50 && predictionResult.percentile90) {
-        const years = predictionResult.sampleTrajectories[0]?.length ?? 0;
-        const line = (value) => Array.from({ length: years }, () => value);
-
-        datasets.push({
-            label: "10th Percentile (Pessimistic)",
-            data: line(predictionResult.percentile10),
-            borderColor: "#dc3545",
-            borderWidth: 2,
-            borderDash: [5, 5],
-            fill: false,
-            tension: 0.1,
-            pointRadius: 0
-        });
-
-        datasets.push({
-            label: "50th Percentile (Median)",
-            data: line(predictionResult.percentile50),
-            borderColor: "#fd7e14",
-            borderWidth: 2,
-            borderDash: [5, 5],
-            fill: false,
-            tension: 0.1,
-            pointRadius: 0
-        });
-
-        datasets.push({
-            label: "90th Percentile (Optimistic)",
-            data: line(predictionResult.percentile90),
-            borderColor: "#198754",
-            borderWidth: 2,
-            borderDash: [5, 5],
-            fill: false,
-            tension: 0.1,
-            pointRadius: 0
-        });
-    }
-
-    const labels = predictionResult.sampleTrajectories[0].map((_, i) => `Year ${i + 1}`);
-
     new Chart(canvas.getContext("2d"), {
         type: "line",
-        data: {
-            labels: labels,
-            datasets: datasets
-        },
+        data: { labels, datasets },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom'
+                },
+                tooltip: {
+                    enabled: true,
+                    mode: 'nearest',
+                    intersect: false,
+                    callbacks: {
+                        label: function (context) {
+                            const value = context.parsed.y;
+                            return `${context.dataset.label}: ${value.toLocaleString(undefined, {
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 0
+                            })}`;
+                        }
+                    }
+                },
+                annotation: {
+                    annotations: {
+                        medianLine: {
+                            type: 'line',
+                            yMin: trajectories.percentile50[trajectories.percentile50.length - 1],
+                            yMax: trajectories.percentile50[trajectories.percentile50.length - 1],
+                            borderColor: 'rgba(0, 0, 0, 0.5)',
+                            borderWidth: 1,
+                            borderDash: [4, 4],
+                            label: {
+                                display: true,
+                                content: 'Final Median',
+                                position: 'start',
+                                backgroundColor: 'rgba(255,255,255,0.7)',
+                                color: 'black',
+                                font: { size: 10 }
+                            }
+                        }
+                    }
+                },
+                zoom: {
+                    pan: {
+                        enabled: true,
+                        mode: 'x'
+                    },
+                    zoom: {
+                        wheel: {
+                            enabled: true
+                        },
+                        pinch: {
+                            enabled: true
+                        },
+                        mode: 'x'
+                    }
+                }
+            },
             interaction: {
                 mode: 'nearest',
                 axis: 'x',
                 intersect: false
             },
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'bottom'
-                }
-            },
             scales: {
                 y: {
                     beginAtZero: true
                 }
+            },
+            hover: {
+                mode: 'nearest',
+                intersect: false
             }
         }
     });
 }
+
 
 function formatCurrency(value) {
     return value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });

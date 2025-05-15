@@ -3,6 +3,7 @@ using FinancePlanning.Application.DTOs;
 using FinancePlanning.Domain.Entities;
 using FinancePlanning.Presentation.Areas.Auth.ViewModels;
 using FinancePlanning.Presentation.Areas.Calculators.ViewModels;
+using FinancePlanning.Presentation.Areas.Forecasting.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,6 +31,7 @@ namespace FinancePlanning.Application
             CreateMap<SavedSimpleInterest, SimpleInterestDto>().ReverseMap();
             CreateMap<CompoundInterestViewModel, CompoundInterestDto>().ReverseMap();
             CreateMap<SavedCompoundInterest, CompoundInterestDto>().ReverseMap();
+            CreateMap<InvestmentPredictionViewModel, InvestmentPredictionDto>().ReverseMap();
         }
     }
 }

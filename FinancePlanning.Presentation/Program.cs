@@ -47,6 +47,7 @@ builder.Services.AddScoped<ICompoundInterestStorageManager, CompoundInterestStor
 builder.Services.AddScoped<ICompoundInterestCalculationRepository, CompoundInterestCalculationRepository>();
 builder.Services.AddScoped<ISimpleInterestStorageManager, SimpleInterestStorageManager>();
 builder.Services.AddScoped<ISimpleInterestCalculationRepository, SimpleInterestCalculationRepository>();
+builder.Services.AddScoped<IMonteCarloSimulator, MonteCarloSimulator>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 

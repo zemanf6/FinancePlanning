@@ -1,41 +1,66 @@
 ﻿using FinancePlanning.Application.DTOs;
 using FinancePlanning.Application.Interfaces;
-using FinancePlanning.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FinancePlanning.Application.Managers
 {
-    public class MonteCarloSimulator: IMonteCarloSimulator
+    public class MonteCarloSimulator : IMonteCarloSimulator
     {
         private readonly Random _random = new();
 
         public SimulationResultDto Simulate(InvestmentPredictionDto input)
         {
+            bool reachedMax = false;
             var finalValues = new List<decimal>();
             var sampleTrajectories = new List<List<decimal>>();
-            var sampleFinals = new List<decimal>(); // pro výběr z 10 trajektorií
+            var sampleFinals = new List<decimal>();
             var sampleSize = 10;
 
-            var (mean, stddev) = GetParameters(input.Strategy);
-            var years = input.Years;
+            var mean = Math.Clamp(input.ExpectedReturn / 100m, -1m, 1m);
+            var stddev = 0.10m;
+            var totalMonths = (int)(input.Years * 12);
             var monthlyContribution = input.MonthlyContribution;
-            var totalMonths = years * 12;
             var ter = input.TotalExpenseRatio / 100m;
 
             for (int i = 0; i < input.SimulationsCount; i++)
             {
-                var value = input.Principal;
+                decimal value = input.Principal > 0 ? input.Principal : 1m;
                 var trajectory = new List<decimal>();
+                double logValue = Math.Log((double)value);
 
                 for (int month = 1; month <= totalMonths; month++)
                 {
-                    value += monthlyContribution;
+                    if (value >= decimal.MaxValue - monthlyContribution)
+                    {
+                        value = decimal.MaxValue;
+                        reachedMax = true;
+                    }
+                    else
+                    {
+                        value += monthlyContribution;
+                    }
+
+                    if (value <= 0) value = 1;
+
+                    logValue = Math.Log((double)value);
+
                     var r = GetRandomReturn(mean, stddev, ter);
-                    value *= (decimal)Math.Pow(1 + (double)r, 1.0 / 12.0);
+                    var monthlyReturn = Math.Exp((double)r / 12.0) - 1;
+
+                    if (monthlyReturn > 1.0) monthlyReturn = 1.0;
+                    if (monthlyReturn < -0.99) monthlyReturn = -0.99;
+
+                    logValue += Math.Log(1.0 + monthlyReturn);
+
+                    double expValue = Math.Exp(logValue);
+                    if (double.IsInfinity(expValue) || expValue > (double)decimal.MaxValue)
+                    {
+                        value = decimal.MaxValue;
+                        reachedMax = true;
+                    }
+                    else
+                    {
+                        value = (decimal)expValue;
+                    }
 
                     if (month % 12 == 0)
                         trajectory.Add(value);
@@ -53,65 +78,50 @@ namespace FinancePlanning.Application.Managers
             finalValues.Sort();
             var count = finalValues.Count;
 
-            var p5 = finalValues[(int)(0.05 * count)];
-            var p10 = finalValues[(int)(0.10 * count)];
-            var p25 = finalValues[(int)(0.25 * count)];
-            var p50 = finalValues[(int)(0.50 * count)];
-            var p75 = finalValues[(int)(0.75 * count)];
-            var p90 = finalValues[(int)(0.90 * count)];
-            var p95 = finalValues[(int)(0.95 * count)];
-            var avg = finalValues.Average();
+            decimal GetPercentile(double p) => finalValues[(int)(p * count)];
+            decimal average = decimal.MaxValue;
 
-            Dictionary<string, List<decimal>> scenarioTrajectories = new();
+            if (!reachedMax)
+                average = finalValues.Average();
 
-            if (sampleTrajectories.Count == sampleFinals.Count && sampleFinals.Count > 0)
+            var result = new SimulationResultDto
             {
-                int idxP10 = FindClosestIndex(sampleFinals, p10);
-                int idxP50 = FindClosestIndex(sampleFinals, p50);
-                int idxP90 = FindClosestIndex(sampleFinals, p90);
+                FinalValues = finalValues,
+                ReachedMaxValue = reachedMax,
+                Percentile5 = GetPercentile(0.05),
+                Percentile10 = GetPercentile(0.10),
+                Percentile25 = GetPercentile(0.25),
+                Percentile50 = GetPercentile(0.50),
+                Percentile75 = GetPercentile(0.75),
+                Percentile90 = GetPercentile(0.90),
+                Percentile95 = GetPercentile(0.95),
+                AverageFinalValue = average
+            };
 
-                scenarioTrajectories = new Dictionary<string, List<decimal>>
-                {
-                    { "percentile10", sampleTrajectories[idxP10] },
-                    { "percentile50", sampleTrajectories[idxP50] },
-                    { "percentile90", sampleTrajectories[idxP90] }
-                };
-            }
-
-            decimal? probability = null;
             if (input.TargetAmount.HasValue)
             {
                 var hits = finalValues.Count(v => v >= input.TargetAmount.Value);
-                probability = Math.Round((decimal)hits / count * 100, 1);
+                result.TargetReachedProbability = Math.Round((decimal)hits / count * 100, 1);
             }
 
-            return new SimulationResultDto
+            if (sampleTrajectories.Count == sampleFinals.Count && sampleFinals.Count > 0)
             {
-                FinalValues = finalValues,
-                Percentile5 = p5,
-                Percentile10 = p10,
-                Percentile25 = p25,
-                Percentile50 = p50,
-                Percentile75 = p75,
-                Percentile90 = p90,
-                Percentile95 = p95,
-                AverageFinalValue = avg,
-                TargetReachedProbability = probability,
-                PercentileTrajectories = scenarioTrajectories
+                int idxP10 = FindClosestIndex(sampleFinals, result.Percentile10);
+                int idxP50 = FindClosestIndex(sampleFinals, result.Percentile50);
+                int idxP90 = FindClosestIndex(sampleFinals, result.Percentile90);
+
+                result.PercentileTrajectories = new Dictionary<string, List<decimal>>
+            {
+                { "percentile10", sampleTrajectories[idxP10] },
+                { "percentile50", sampleTrajectories[idxP50] },
+                { "percentile90", sampleTrajectories[idxP90] }
             };
+            }
+
+            return result;
         }
 
 
-        private static (decimal mean, decimal stddev) GetParameters(InvestmentStrategy strategy)
-        {
-            return strategy switch
-            {
-                InvestmentStrategy.Conservative => (0.04m, 0.05m),
-                InvestmentStrategy.Balanced => (0.06m, 0.10m),
-                InvestmentStrategy.Aggressive => (0.08m, 0.15m),
-                _ => (0.06m, 0.10m)
-            };
-        }
 
         private decimal GetRandomReturn(decimal mean, decimal stddev, decimal ter)
         {
@@ -125,6 +135,7 @@ namespace FinancePlanning.Application.Managers
             var u2 = 1.0 - _random.NextDouble();
             return Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Cos(2.0 * Math.PI * u2);
         }
+
         private static int FindClosestIndex(List<decimal> sortedValues, decimal target)
         {
             decimal minDiff = decimal.MaxValue;

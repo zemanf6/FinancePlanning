@@ -25,6 +25,7 @@ namespace FinancePlanning.Application.DTOs
         public decimal? TargetReachedProbability { get; set; }
 
         public string? Recommendation { get; set; }
+        public bool ReachedMaxValue { get; set; }
     }
 
 }

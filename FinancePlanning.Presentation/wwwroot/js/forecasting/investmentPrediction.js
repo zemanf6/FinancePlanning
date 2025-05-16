@@ -2,6 +2,17 @@
     initCurrencyDropdown();
     renderHistogram();
     renderTrajectories();
+
+    const form = document.querySelector("form");
+    form.addEventListener("submit", () => {
+        const btn = document.getElementById("simulateBtn");
+        const spinner = document.getElementById("simulateSpinner");
+        btn.disabled = true;
+        spinner.classList.remove("d-none");
+    });
+
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
 });
 
 function initCurrencyDropdown() {
@@ -214,7 +225,6 @@ function renderTrajectories() {
         }
     });
 }
-
 
 function formatCurrency(value) {
     return value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });

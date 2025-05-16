@@ -32,14 +32,6 @@
             </div>
 
             <div class="col-md-4">
-                <label asp-for="Strategy" class="form-label">Strategy</label>
-                <select asp-for="Strategy" class="form-select" asp-items="Html.GetEnumSelectList<FinancePlanning.Domain.Enums.InvestmentStrategy>()">
-                    <option value="">-- Select --</option>
-                </select>
-                <span asp-validation-for="Strategy" class="text-danger small"></span>
-            </div>
-
-            <div class="col-md-4">
                 <label asp-for="TotalExpenseRatio" class="form-label">
                     TER (%)
                     <i class="bi bi-info-circle text-secondary" data-bs-toggle="tooltip" title="TER (Total Expense Ratio) reduces the expected return in this simulation. In real-world scenarios, actual fees may be calculated differently."></i>
@@ -71,51 +63,50 @@
                 <select asp-for="SelectedCurrency" class="form-select" id="currencySelect" data-selected-value="@Model.SelectedCurrency"></select>
                 <span asp-validation-for="SelectedCurrency" class="text-danger small"></span>
             </div>
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
             <h5 class="mt-4">Portfolio Composition</h5>
 
-            @if (ViewData.ModelState.TryGetValue("PortfolioItems", out var entry) && entry.Errors.Count > 0)
-            {
-                <div class="alert alert-danger">
-                    @foreach (var error in entry.Errors)
-                    {
-                        <div>@error.ErrorMessage</div>
-                    }
-                </div>
-            }
-
-            <table class="table table-bordered table-sm">
-                <thead class="table-light">
-                    <tr>
-                        <th>Asset Name</th>
-                        <th>Expected Return (%)</th>
-                        <th>Weight (%)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (int i = 0; i < Model.PortfolioItems.Count; i++)
-                    {
+            <div class="table-responsive">
+                <table id="portfolioTable" class="table table-bordered table-sm align-middle">
+                    <thead class="table-light">
                         <tr>
-                            <td>
-                                <input class="form-control"
-                                       asp-for="PortfolioItems[i].AssetName"
-                                       type="text" />
-                                <span asp-validation-for="PortfolioItems[i].AssetName" class="text-danger small"></span>
-                            </td>
-                            <td>
-                                <input class="form-control" type="number" step="0.01"
-                                       asp-for="PortfolioItems[i].ExpectedReturn" />
-                                <span asp-validation-for="PortfolioItems[i].ExpectedReturn" class="text-danger small"></span>
-                            </td>
-                            <td>
-                                <input class="form-control" type="number" step="0.01"
-                                       asp-for="PortfolioItems[i].Weight" />
-                                <span asp-validation-for="PortfolioItems[i].Weight" class="text-danger small"></span>
-                            </td>
+                            <th>Asset Name</th>
+                            <th>Expected Return (%)</th>
+                            <th>Weight (%)</th>
+                            <th></th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.PortfolioItems.Count; i++)
+                        {
+                            <tr>
+                                <td>
+                                    <input type="text" name="PortfolioItems[@i].AssetName" class="form-control asset-name" value="@Model.PortfolioItems[i].AssetName" />
+                                </td>
+                                <td>
+                                    <input type="number" step="0.01" name="PortfolioItems[@i].ExpectedReturn" class="form-control expected-return" value="@Model.PortfolioItems[i].ExpectedReturn" />
+                                </td>
+                                <td>
+                                    <input type="number" step="0.01" name="PortfolioItems[@i].Weight" class="form-control weight" value="@Model.PortfolioItems[i].Weight" />
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-danger btn-sm remove-row" title="Remove row" aria-label="Remove row"><i class="bi bi-trash"></i></button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mb-3">
+                <button type="button" class="btn btn-outline-primary btn-sm" id="addAssetRow"><i class="bi bi-plus-lg"></i> Add Asset</button>
+            </div>
+
+            <div class="alert alert-secondary py-2 px-3" id="portfolioStats">
+                <div>Total Weight: <strong><span id="totalWeight">0</span>%</strong></div>
+                <div>Weighted Average Return: <strong><span id="averageReturn">0</span>%</strong></div>
+            </div>
 
 
         </div>
@@ -132,6 +123,15 @@
     {
         <div class="mt-5" id="results">
             <h4><i class="bi bi-graph-up"></i> Simulation Results</h4>
+            @if (Model.Result.ReachedMaxValue)
+            {
+                <div class="alert alert-warning mt-3">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    Some simulations have reached the maximum supported value for calculations.
+                    This may indicate extreme growth assumptions or a very long investment horizon.
+                    The final value has been capped at the technical limit of the system.
+                </div>
+            }
 
             <div class="card border-primary mb-4">
                 <div class="card-body">
@@ -246,6 +246,7 @@
         });
     </script>
     <script src="~/js/forecasting/investmentPrediction.js"></script>
+    <script src="~/js/forecasting/portfolio.js"></script>
 }
 
 
@@ -263,9 +264,6 @@
             if (p < 85) return "Your strategy seems reasonably balanced, but the market outcome may vary. Maintain consistency and avoid reacting emotionally to fluctuations.";
             else return "You have a high probability of reaching your goal. Continue investing regularly, and beware of overconfidence during market highs.";
         }
-
-        if (result.Percentile90 > 2 * result.Percentile10)
-            return "The results show a wide range of possible outcomes. This indicates a high level of market volatility — make sure your strategy matches your risk profile.";
 
         return "Simulation shows a realistic projection of future investment performance. Remember: even a good strategy needs discipline and patience over time.";
     }

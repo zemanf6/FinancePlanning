@@ -33,6 +33,7 @@ namespace FinancePlanning.Application.Managers
                     {
                         value = decimal.MaxValue;
                         reachedMax = true;
+                        break;
                     }
                     else
                     {
@@ -56,6 +57,7 @@ namespace FinancePlanning.Application.Managers
                     {
                         value = decimal.MaxValue;
                         reachedMax = true;
+                        break;
                     }
                     else
                     {
@@ -81,8 +83,16 @@ namespace FinancePlanning.Application.Managers
             decimal GetPercentile(double p) => finalValues[(int)(p * count)];
             decimal average = decimal.MaxValue;
 
-            if (!reachedMax)
+            try
+            {
                 average = finalValues.Average();
+            }
+            catch (OverflowException)
+            {
+                average = decimal.MaxValue;
+                reachedMax = true;
+            }
+            
 
             var result = new SimulationResultDto
             {

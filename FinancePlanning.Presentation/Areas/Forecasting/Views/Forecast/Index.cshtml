@@ -7,27 +7,32 @@
 
 <div class="container mt-4">
     <h2 class="mb-4">Investment Prediction (Monte Carlo Simulation)</h2>
+    @if (!ViewData.ModelState.IsValid &&
+    ViewData.ModelState.Values.Any(v => v.Errors.Count > 0 && string.IsNullOrEmpty(v.Errors.FirstOrDefault()?.Exception?.Message)))
+    {
+        <div asp-validation-summary="All" class="alert alert-danger small"></div>
+    }
 
-    <form asp-action="Index" method="post">
+    <form asp-action="Index" method="post" id="predictionForm" novalidate>
         @Html.AntiForgeryToken()
 
         <div class="row gy-3">
 
             <div class="col-md-6">
                 <label asp-for="Principal" class="form-label">Initial Investment</label>
-                <input asp-for="Principal" class="form-control" type="number" step="0.001" />
+                <input asp-for="Principal" class="form-control" type="number" step="0.01" min="0" />
                 <span asp-validation-for="Principal" class="text-danger small"></span>
             </div>
 
             <div class="col-md-6">
                 <label asp-for="MonthlyContribution" class="form-label">Monthly Contribution</label>
-                <input asp-for="MonthlyContribution" class="form-control" type="number" step="0.001" />
+                <input asp-for="MonthlyContribution" class="form-control" type="number" step="0.001" min="0" />
                 <span asp-validation-for="MonthlyContribution" class="text-danger small"></span>
             </div>
 
             <div class="col-md-4">
                 <label asp-for="Years" class="form-label">Investment Horizon (Years)</label>
-                <input asp-for="Years" class="form-control" type="number" step="0.001" />
+                <input asp-for="Years" class="form-control" type="number" step="0.001" min="1" max="100" />
                 <span asp-validation-for="Years" class="text-danger small"></span>
             </div>
 
@@ -36,7 +41,7 @@
                     TER (%)
                     <i class="bi bi-info-circle text-secondary" data-bs-toggle="tooltip" title="TER (Total Expense Ratio) reduces the expected return in this simulation. In real-world scenarios, actual fees may be calculated differently."></i>
                 </label>
-                <input asp-for="TotalExpenseRatio" class="form-control" type="number" step="0.001" />
+                <input asp-for="TotalExpenseRatio" class="form-control" type="number" step="0.001" max="100" min="0"  />
                 <span asp-validation-for="TotalExpenseRatio" class="text-danger small"></span>
             </div>
 
@@ -72,8 +77,11 @@
                     <thead class="table-light">
                         <tr>
                             <th>Asset Name</th>
+                            <th>Pre-defined</th>
+                            <th>Pre-defined volatility</th>
                             <th>Expected Return (%)</th>
                             <th>Weight (%)</th>
+                            <th>Volatility (Std. Dev. %)</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -85,13 +93,37 @@
                                     <input type="text" name="PortfolioItems[@i].AssetName" class="form-control asset-name" value="@Model.PortfolioItems[i].AssetName" />
                                 </td>
                                 <td>
-                                    <input type="number" step="0.01" name="PortfolioItems[@i].ExpectedReturn" class="form-control expected-return" value="@Model.PortfolioItems[i].ExpectedReturn" />
+                                    <select class="form-select form-select-sm asset-selector">
+                                        <option value="">-- Select --</option>
+                                        <option value="World Stocks">World Stocks</option>
+                                        <option value="US Stocks">US Stocks</option>
+                                        <option value="International Stocks">International Stocks</option>
+                                        <option value="Emerging Markets">Emerging Markets</option>
+                                        <option value="Government Bonds">Government Bonds</option>
+                                        <option value="Corporate Bonds">Corporate Bonds</option>
+                                        <option value="High-yield Bonds">High-yield Bonds</option>
+                                        <option value="Money Market">Money Market</option>
+                                    </select>
+                                    <input type="hidden" name="PortfolioItems[@i].AssetName" class="hidden-asset-name" value="@Model.PortfolioItems[i].AssetName" />
                                 </td>
                                 <td>
-                                    <input type="number" step="0.01" name="PortfolioItems[@i].Weight" class="form-control weight" value="@Model.PortfolioItems[i].Weight" />
+                                    <select class="form-select form-select-sm volatility-selector">
+                                        <option value="balanced" selected>Balanced</option>
+                                        <option value="conservative">Conservative</option>
+                                        <option value="aggressive">Aggressive</option>
+                                    </select>
                                 </td>
                                 <td>
-                                    <button type="button" class="btn btn-danger btn-sm remove-row" title="Remove row" aria-label="Remove row"><i class="bi bi-trash"></i></button>
+                                    <input type="number" step="0.01" name="PortfolioItems[@i].ExpectedReturn" min="-100" max="100" class="form-control expected-return" value="@Model.PortfolioItems[i].ExpectedReturn" />
+                                </td>
+                                <td>
+                                    <input type="number" step="0.01" name="PortfolioItems[@i].Weight" class="form-control weight" min="0" max="100" value="@Model.PortfolioItems[i].Weight" />
+                                </td>
+                                <td>
+                                    <input type="number" step="0.01" name="PortfolioItems[@i].StandardDeviation" min="0" max="100" class="form-control stddev" value="@Model.PortfolioItems[i].StandardDeviation" />
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-danger btn-sm remove-row"><i class="bi bi-trash"></i></button>
                                 </td>
                             </tr>
                         }
@@ -106,14 +138,19 @@
             <div class="alert alert-secondary py-2 px-3" id="portfolioStats">
                 <div>Total Weight: <strong><span id="totalWeight">0</span>%</strong></div>
                 <div>Weighted Average Return: <strong><span id="averageReturn">0</span>%</strong></div>
+                <div>Portfolio Volatility (weighted): <strong><span id="calculatedVolatility">0</span>%</strong></div>
             </div>
 
 
         </div>
 
         <div class="mt-4 d-flex justify-content-end">
-            <button type="submit" id="simulateBtn" class="btn btn-success btn-lg shadow-sm">
-                <span class="spinner-border spinner-border-sm me-2 d-none" id="simulateSpinner" role="status" aria-hidden="true"></span>
+            <button type="button"
+                    id="simulateBtn"
+                    class="btn btn-success btn-lg shadow-sm"
+                    onclick="onSimulateClick()">
+                <span class="spinner-border spinner-border-sm me-2 d-none"
+                      id="simulateSpinner" role="status" aria-hidden="true"></span>
                 <i class="bi bi-bar-chart-line"></i> Simulate
             </button>
         </div>
@@ -171,7 +208,7 @@
                         <p class="mb-0"><strong>Chance to reach target:</strong> @Model.Result.TargetReachedProbability.Value.ToString("0.0")%</p>
                     }
                 </div>
-                <div class="alert alert-info mt-4">@GetBehavioralCommentary(Model)</div>
+                <div class="alert alert-info mt-4">@Model.GetBehavioralCommentary()</div>
             </div>
 
             <div class="row gy-4">
@@ -219,51 +256,50 @@
 
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")
+
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0/dist/chartjs-plugin-annotation.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+
     <script>
-        window.predictionResult = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Result ?? new FinancePlanning.Application.DTOs.SimulationResultDto(), new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }));
+        window.predictionResult = @Html.Raw(
+        System.Text.Json.JsonSerializer.Serialize(
+        Model.Result ?? new FinancePlanning.Application.DTOs.SimulationResultDto(),
+        new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }
+        )
+        );
+    </script>
+
+    <script src="~/js/forecasting/portfolio.js"></script>
+    <script src="~/js/forecasting/investmentPrediction.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            initCurrencyDropdown();
+
+            renderHistogram();
+            renderTrajectories();
+        });
+
+        function onSimulateClick() {
+            const form = document.getElementById('predictionForm');
+            const btn = document.getElementById('simulateBtn');
+            const spinner = document.getElementById('simulateSpinner');
+
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            btn.disabled = true;
+            spinner.classList.remove('d-none');
+            setTimeout(() => form.submit(), 50);
+        }
 
         function updateSimulationValue(value) {
             document.getElementById('simCountValue').innerText = value;
             document.getElementById('simulationWarning').style.display = value > 5000 ? 'block' : 'none';
         }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            const form = document.querySelector("form");
-            form.addEventListener("submit", () => {
-                const btn = document.getElementById("simulateBtn");
-                const spinner = document.getElementById("simulateSpinner");
-                btn.disabled = true;
-                spinner.classList.remove("d-none");
-            });
-
-            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
-        });
     </script>
-    <script src="~/js/forecasting/investmentPrediction.js"></script>
-    <script src="~/js/forecasting/portfolio.js"></script>
-}
-
-
-@functions {
-    public string GetBehavioralCommentary(FinancePlanning.Presentation.Areas.Forecasting.ViewModels.InvestmentPredictionViewModel model)
-    {
-        var result = model.Result;
-        if (result == null) return "";
-
-        if (model.TargetAmount.HasValue && result.TargetReachedProbability.HasValue)
-        {
-            var p = result.TargetReachedProbability.Value;
-            if (p < 30) return "Based on the simulation, the chance of reaching your target is very low. Consider increasing your monthly contribution or extending the investment horizon.";
-            if (p < 60) return "There is moderate uncertainty in reaching your financial goal. Be cautious and review your risk tolerance and long-term plan.";
-            if (p < 85) return "Your strategy seems reasonably balanced, but the market outcome may vary. Maintain consistency and avoid reacting emotionally to fluctuations.";
-            else return "You have a high probability of reaching your goal. Continue investing regularly, and beware of overconfidence during market highs.";
-        }
-
-        return "Simulation shows a realistic projection of future investment performance. Remember: even a good strategy needs discipline and patience over time.";
-    }
 }

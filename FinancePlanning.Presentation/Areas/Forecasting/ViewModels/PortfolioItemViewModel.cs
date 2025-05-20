@@ -11,5 +11,8 @@ namespace FinancePlanning.Presentation.Areas.Forecasting.ViewModels
 
         [Range(0, 100)]
         public decimal Weight { get; set; }
+
+        [Range(0, 100)]
+        public decimal StandardDeviation { get; set; }
     }
 }

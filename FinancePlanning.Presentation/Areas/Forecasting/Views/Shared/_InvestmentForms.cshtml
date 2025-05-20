@@ -1,0 +1,57 @@
+﻿@model FinancePlanning.Presentation.Areas.Forecasting.ViewModels.InvestmentPredictionViewModel
+
+<div class="row gy-3">
+
+    <div class="col-md-6">
+        <label asp-for="Principal" class="form-label">Initial Investment</label>
+        <input asp-for="Principal" class="form-control" type="number" step="0.01" min="0" />
+        <span asp-validation-for="Principal" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="MonthlyContribution" class="form-label">Monthly Contribution</label>
+        <input asp-for="MonthlyContribution" class="form-control" type="number" step="0.001" min="0" />
+        <span asp-validation-for="MonthlyContribution" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-4">
+        <label asp-for="Years" class="form-label">Investment Horizon (Years)</label>
+        <input asp-for="Years" class="form-control" type="number" step="0.001" min="1" max="100" />
+        <span asp-validation-for="Years" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-4">
+        <label asp-for="TotalExpenseRatio" class="form-label">
+            TER (%)
+            <i class="bi bi-info-circle text-secondary" data-bs-toggle="tooltip" title="TER (Total Expense Ratio) reduces the expected return in this simulation. In real-world scenarios, actual fees may be calculated differently."></i>
+        </label>
+        <input asp-for="TotalExpenseRatio" class="form-control" type="number" step="0.001" max="100" min="0" />
+        <span asp-validation-for="TotalExpenseRatio" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="SimulationsCount" class="form-label">
+            Number of Simulations: <span id="simCountValue">@Model.SimulationsCount</span>
+        </label>
+        <input asp-for="SimulationsCount" type="range" min="100" max="20000" step="100"
+               class="form-range" oninput="updateSimulationValue(this.value)" />
+        <span asp-validation-for="SimulationsCount" class="text-danger small"></span>
+        <div id="simulationWarning" class="text-warning small mt-1" style="display:none;">
+            Large number of simulations may take longer to compute.
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="TargetAmount" class="form-label">Target Amount (Optional)</label>
+        <input asp-for="TargetAmount" class="form-control" type="number" step="0.001" />
+        <span asp-validation-for="TargetAmount" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="SelectedCurrency" class="form-label">Currency</label>
+        <select asp-for="SelectedCurrency" class="form-select" id="currencySelect" data-selected-value="@Model.SelectedCurrency"></select>
+        <span asp-validation-for="SelectedCurrency" class="text-danger small"></span>
+    </div>
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+</div>

@@ -19,5 +19,6 @@ namespace FinancePlanning.Application.DTOs
         public decimal TotalExpenseRatio { get; set; } = 0.0m;
 
         public decimal ExpectedReturn { get; set; }
+        public decimal StandardDeviation { get; set; }
     }
 }

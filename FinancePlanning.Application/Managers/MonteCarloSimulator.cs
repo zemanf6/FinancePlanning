@@ -16,7 +16,7 @@ namespace FinancePlanning.Application.Managers
             var sampleSize = 10;
 
             var mean = Math.Clamp(input.ExpectedReturn / 100m, -1m, 1m);
-            var stddev = 0.10m;
+            var stddev = input.StandardDeviation / 100m;
             var totalMonths = (int)(input.Years * 12);
             var monthlyContribution = input.MonthlyContribution;
             var ter = input.TotalExpenseRatio / 100m;

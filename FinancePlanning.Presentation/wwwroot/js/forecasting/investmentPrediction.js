@@ -1,21 +1,4 @@
-﻿document.addEventListener("DOMContentLoaded", () => {
-    initCurrencyDropdown();
-    renderHistogram();
-    renderTrajectories();
-
-    const form = document.querySelector("form");
-    form.addEventListener("submit", () => {
-        const btn = document.getElementById("simulateBtn");
-        const spinner = document.getElementById("simulateSpinner");
-        btn.disabled = true;
-        spinner.classList.remove("d-none");
-    });
-
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
-});
-
-function initCurrencyDropdown() {
+﻿function initCurrencyDropdown() {
     const currencySelect = document.getElementById("currencySelect");
     if (!currencySelect) return;
 
@@ -228,6 +211,14 @@ function renderTrajectories() {
 
 function formatCurrency(value) {
     return value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+
+function updateHiddenAsset(select) {
+    const row = select.closest('tr');
+    const hiddenInput = row.querySelector('.hidden-asset-name');
+    if (hiddenInput) {
+        hiddenInput.value = select.value;
+    }
 }
 
 function getColor(index) {

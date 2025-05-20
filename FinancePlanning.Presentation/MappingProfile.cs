@@ -32,7 +32,8 @@ namespace FinancePlanning.Application
             CreateMap<CompoundInterestViewModel, CompoundInterestDto>().ReverseMap();
             CreateMap<SavedCompoundInterest, CompoundInterestDto>().ReverseMap();
             CreateMap<InvestmentPredictionViewModel, InvestmentPredictionDto>()
-                .ForMember(dest => dest.ExpectedReturn, opt => opt.MapFrom(src => src.CalculatedExpectedReturn));
+                .ForMember(dest => dest.ExpectedReturn, opt => opt.MapFrom(src => src.CalculatedExpectedReturn))
+                .ForMember(dest => dest.StandardDeviation, opt => opt.MapFrom(src => src.CalculatedStandardDeviation));
         }
     }
 }

@@ -28,7 +28,6 @@ namespace FinancePlanning.Presentation.Areas.Forecasting.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Index(InvestmentPredictionViewModel model)
         {
-            Console.WriteLine(model.CalculatedExpectedReturn);
             Console.WriteLine();
             if (!ModelState.IsValid)
                 return View(model);

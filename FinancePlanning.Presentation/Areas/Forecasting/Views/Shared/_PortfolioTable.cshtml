@@ -1,0 +1,70 @@
+﻿@model IList<FinancePlanning.Presentation.Areas.Forecasting.ViewModels.PortfolioItemViewModel>
+
+<div class="table-responsive">
+    <table id="portfolioTable" class="table table-bordered table-sm align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Asset Name</th>
+                <th>Pre-defined</th>
+                <th>Pre-defined volatility</th>
+                <th>Expected Return (%)</th>
+                <th>Weight (%)</th>
+                <th>Volatility (Std. Dev. %)</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                <tr>
+                    <td>
+                        <input type="text" name="PortfolioItems[@i].AssetName" class="form-control asset-name" value="@Model[i].AssetName" />
+                    </td>
+                    <td>
+                        <select class="form-select form-select-sm asset-selector">
+                            <option value="">-- Select --</option>
+                            <option value="World Stocks">World Stocks</option>
+                            <option value="US Stocks">US Stocks</option>
+                            <option value="International Stocks">International Stocks</option>
+                            <option value="Emerging Markets">Emerging Markets</option>
+                            <option value="Government Bonds">Government Bonds</option>
+                            <option value="Corporate Bonds">Corporate Bonds</option>
+                            <option value="High-yield Bonds">High-yield Bonds</option>
+                            <option value="Money Market">Money Market</option>
+                        </select>
+                        <input type="hidden" name="PortfolioItems[@i].AssetName" class="hidden-asset-name" value="@Model[i].AssetName" />
+                    </td>
+                    <td>
+                        <select class="form-select form-select-sm volatility-selector">
+                            <option value="balanced" selected>Balanced</option>
+                            <option value="conservative">Conservative</option>
+                            <option value="aggressive">Aggressive</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" step="0.01" name="PortfolioItems[@i].ExpectedReturn" min="-100" max="100" class="form-control expected-return" value="@Model[i].ExpectedReturn" />
+                    </td>
+                    <td>
+                        <input type="number" step="0.01" name="PortfolioItems[@i].Weight" class="form-control weight" min="0" max="100" value="@Model[i].Weight" />
+                    </td>
+                    <td>
+                        <input type="number" step="0.01" name="PortfolioItems[@i].StandardDeviation" min="0" max="100" class="form-control stddev" value="@Model[i].StandardDeviation" />
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm remove-row"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="mb-3">
+    <button type="button" class="btn btn-outline-primary btn-sm" id="addAssetRow"><i class="bi bi-plus-lg"></i> Add Asset</button>
+</div>
+
+<div class="alert alert-secondary py-2 px-3" id="portfolioStats">
+    <div>Total Weight: <strong><span id="totalWeight">0</span>%</strong></div>
+    <div>Weighted Average Return: <strong><span id="averageReturn">0</span>%</strong></div>
+    <div>Portfolio Volatility (weighted): <strong><span id="calculatedVolatility">0</span>%</strong></div>
+</div>

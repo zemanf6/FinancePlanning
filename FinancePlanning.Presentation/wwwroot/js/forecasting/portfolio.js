@@ -8,7 +8,7 @@
         stdDevs: { conservative: 12, balanced: 17, aggressive: 22 }
     },
     "International Stocks": {
-        expectedReturn: 6.5,
+        expectedReturn: 6.0,
         stdDevs: { conservative: 11, balanced: 16, aggressive: 21 }
     },
     "Emerging Markets": {
@@ -16,11 +16,11 @@
         stdDevs: { conservative: 15, balanced: 20, aggressive: 30 }
     },
     "Government Bonds": {
-        expectedReturn: 2.5,
+        expectedReturn: 3.0,
         stdDevs: { conservative: 3, balanced: 5, aggressive: 7 }
     },
     "Corporate Bonds": {
-        expectedReturn: 3.5,
+        expectedReturn: 4.0,
         stdDevs: { conservative: 5, balanced: 7, aggressive: 10 }
     },
     "High-yield Bonds": {
@@ -29,7 +29,7 @@
     },
     "Money Market": {
         expectedReturn: 1.0,
-        stdDevs: { conservative: 0.5, balanced: 1, aggressive: 2 }
+        stdDevs: { conservative: 0, balanced: 1, aggressive: 2 }
     }
 };
 
@@ -68,7 +68,8 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("calculatedVolatility").innerText = weightedVolatility.toFixed(2);
 
         const statsBox = document.getElementById("portfolioStats");
-        if (Math.round(totalWeight) !== 100) {
+        const tolerance = 0.05;
+        if (Math.abs(totalWeight - 100) > tolerance) {
             statsBox.classList.remove("alert-secondary");
             statsBox.classList.add("alert-warning");
         } else {

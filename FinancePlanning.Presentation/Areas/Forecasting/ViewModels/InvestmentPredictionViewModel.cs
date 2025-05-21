@@ -32,6 +32,10 @@ namespace FinancePlanning.Presentation.Areas.Forecasting.ViewModels
         [Display(Name = "Total Expense Ratio (%)")]
         public decimal TotalExpenseRatio { get; set; } = 0.0m;
 
+        [Range(0, 1)]
+        [Display(Name = "Average Correlation")]
+        public decimal Correlation { get; set; } = 0.2m;
+
         [Display(Name = "Calculated Expected Return")]
         public decimal CalculatedExpectedReturn
         {
@@ -61,10 +65,26 @@ namespace FinancePlanning.Presentation.Areas.Forecasting.ViewModels
                 var totalWeight = activeItems.Sum(p => p.Weight);
                 if (totalWeight == 0) return 0;
 
-                var weightedSum = activeItems.Sum(p => p.Weight * p.StandardDeviation);
-                return weightedSum / totalWeight;
+                double variance = 0;
+
+                for (int i = 0; i < activeItems.Count; i++)
+                {
+                    var wi = (double)activeItems[i].Weight / 100;
+                    var si = (double)activeItems[i].StandardDeviation / 100;
+                    variance += wi * wi * si * si;
+
+                    for (int j = i + 1; j < activeItems.Count; j++)
+                    {
+                        var wj = (double)activeItems[j].Weight / 100;
+                        var sj = (double)activeItems[j].StandardDeviation / 100;
+                        variance += 2 * wi * wj * si * sj * (double)Correlation;
+                    }
+                }
+
+                return (decimal)(Math.Sqrt(variance) * 100);
             }
         }
+
 
         public SimulationResultDto? Result { get; set; }
 
@@ -85,9 +105,9 @@ namespace FinancePlanning.Presentation.Areas.Forecasting.ViewModels
             }
 
             var totalWeight = activeItems.Sum(p => p.Weight);
-            if (Math.Round(totalWeight) != 100)
+            if (Math.Abs(totalWeight - 100m) > 0.01m)
             {
-                yield return new ValidationResult("Total portfolio weight must be exactly 100%.", new[] { nameof(PortfolioItems) });
+                yield return new ValidationResult("Total portfolio weight must be 100%. (±0.01% allowed)", new[] { nameof(PortfolioItems) });
             }
         }
 

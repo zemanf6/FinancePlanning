@@ -3,6 +3,7 @@ using FinancePlanning.Application.DTOs;
 using FinancePlanning.Application.Interfaces;
 using FinancePlanning.Presentation.Areas.Forecasting.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace FinancePlanning.Presentation.Areas.Forecasting.Controllers
 {
@@ -21,14 +22,21 @@ namespace FinancePlanning.Presentation.Areas.Forecasting.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            return View(new InvestmentPredictionViewModel());
+            var model = new InvestmentPredictionViewModel
+            {
+                PortfolioItems = new List<PortfolioItemViewModel>
+                {
+                    new PortfolioItemViewModel()
+                }
+            };
+
+            return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Index(InvestmentPredictionViewModel model)
         {
-            Console.WriteLine();
             if (!ModelState.IsValid)
                 return View(model);
 
@@ -37,6 +45,7 @@ namespace FinancePlanning.Presentation.Areas.Forecasting.Controllers
             var result = _simulator.Simulate(dto);
 
             model.Result = result;
+
             return View(model);
         }
     }

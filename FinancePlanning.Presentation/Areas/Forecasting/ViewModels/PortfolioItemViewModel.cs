@@ -4,7 +4,7 @@ namespace FinancePlanning.Presentation.Areas.Forecasting.ViewModels
 {
     public class PortfolioItemViewModel
     {
-        public string AssetName { get; set; } = string.Empty;
+        public string? AssetName { get; set; }
 
         [Range(-100, 100)]
         public decimal ExpectedReturn { get; set; }
@@ -14,5 +14,9 @@ namespace FinancePlanning.Presentation.Areas.Forecasting.ViewModels
 
         [Range(0, 100)]
         public decimal StandardDeviation { get; set; }
+
+        [Required]
+        public string SelectedVolatilityLevel { get; set; } = "balanced";
+
     }
 }

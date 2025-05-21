@@ -1,5 +1,6 @@
 ﻿@model FinancePlanning.Presentation.Areas.Forecasting.ViewModels.InvestmentPredictionViewModel
 @inject FinancePlanning.Infrastructure.Interfaces.ICurrencyFormatter CurrencyFormatter
+@using System.Text.Json
 
 @{
     ViewData["Title"] = "Investment Prediction";
@@ -7,6 +8,7 @@
 
 <div class="container mt-4">
     <h2 class="mb-4">Investment Prediction (Monte Carlo Simulation)</h2>
+
     @if (!ViewData.ModelState.IsValid &&
     ViewData.ModelState.Values.Any(v => v.Errors.Count > 0 && string.IsNullOrEmpty(v.Errors.FirstOrDefault()?.Exception?.Message)))
     {
@@ -16,136 +18,11 @@
     <form asp-action="Index" method="post" id="predictionForm" novalidate>
         @Html.AntiForgeryToken()
 
-        <div class="row gy-3">
-
-            <div class="col-md-6">
-                <label asp-for="Principal" class="form-label">Initial Investment</label>
-                <input asp-for="Principal" class="form-control" type="number" step="0.01" min="0" />
-                <span asp-validation-for="Principal" class="text-danger small"></span>
-            </div>
-
-            <div class="col-md-6">
-                <label asp-for="MonthlyContribution" class="form-label">Monthly Contribution</label>
-                <input asp-for="MonthlyContribution" class="form-control" type="number" step="0.001" min="0" />
-                <span asp-validation-for="MonthlyContribution" class="text-danger small"></span>
-            </div>
-
-            <div class="col-md-4">
-                <label asp-for="Years" class="form-label">Investment Horizon (Years)</label>
-                <input asp-for="Years" class="form-control" type="number" step="0.001" min="1" max="100" />
-                <span asp-validation-for="Years" class="text-danger small"></span>
-            </div>
-
-            <div class="col-md-4">
-                <label asp-for="TotalExpenseRatio" class="form-label">
-                    TER (%)
-                    <i class="bi bi-info-circle text-secondary" data-bs-toggle="tooltip" title="TER (Total Expense Ratio) reduces the expected return in this simulation. In real-world scenarios, actual fees may be calculated differently."></i>
-                </label>
-                <input asp-for="TotalExpenseRatio" class="form-control" type="number" step="0.001" max="100" min="0"  />
-                <span asp-validation-for="TotalExpenseRatio" class="text-danger small"></span>
-            </div>
-
-            <div class="col-md-6">
-                <label asp-for="SimulationsCount" class="form-label">
-                    Number of Simulations: <span id="simCountValue">@Model.SimulationsCount</span>
-                </label>
-                <input asp-for="SimulationsCount" type="range" min="100" max="20000" step="100"
-                       class="form-range" oninput="updateSimulationValue(this.value)" />
-                <span asp-validation-for="SimulationsCount" class="text-danger small"></span>
-                <div id="simulationWarning" class="text-warning small mt-1" style="display:none;">
-                    Large number of simulations may take longer to compute.
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <label asp-for="TargetAmount" class="form-label">Target Amount (Optional)</label>
-                <input asp-for="TargetAmount" class="form-control" type="number" step="0.001" />
-                <span asp-validation-for="TargetAmount" class="text-danger small"></span>
-            </div>
-
-            <div class="col-md-6">
-                <label asp-for="SelectedCurrency" class="form-label">Currency</label>
-                <select asp-for="SelectedCurrency" class="form-select" id="currencySelect" data-selected-value="@Model.SelectedCurrency"></select>
-                <span asp-validation-for="SelectedCurrency" class="text-danger small"></span>
-            </div>
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-            <h5 class="mt-4">Portfolio Composition</h5>
-
-            <div class="table-responsive">
-                <table id="portfolioTable" class="table table-bordered table-sm align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Asset Name</th>
-                            <th>Pre-defined</th>
-                            <th>Pre-defined volatility</th>
-                            <th>Expected Return (%)</th>
-                            <th>Weight (%)</th>
-                            <th>Volatility (Std. Dev. %)</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (int i = 0; i < Model.PortfolioItems.Count; i++)
-                        {
-                            <tr>
-                                <td>
-                                    <input type="text" name="PortfolioItems[@i].AssetName" class="form-control asset-name" value="@Model.PortfolioItems[i].AssetName" />
-                                </td>
-                                <td>
-                                    <select class="form-select form-select-sm asset-selector">
-                                        <option value="">-- Select --</option>
-                                        <option value="World Stocks">World Stocks</option>
-                                        <option value="US Stocks">US Stocks</option>
-                                        <option value="International Stocks">International Stocks</option>
-                                        <option value="Emerging Markets">Emerging Markets</option>
-                                        <option value="Government Bonds">Government Bonds</option>
-                                        <option value="Corporate Bonds">Corporate Bonds</option>
-                                        <option value="High-yield Bonds">High-yield Bonds</option>
-                                        <option value="Money Market">Money Market</option>
-                                    </select>
-                                    <input type="hidden" name="PortfolioItems[@i].AssetName" class="hidden-asset-name" value="@Model.PortfolioItems[i].AssetName" />
-                                </td>
-                                <td>
-                                    <select class="form-select form-select-sm volatility-selector">
-                                        <option value="balanced" selected>Balanced</option>
-                                        <option value="conservative">Conservative</option>
-                                        <option value="aggressive">Aggressive</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <input type="number" step="0.01" name="PortfolioItems[@i].ExpectedReturn" min="-100" max="100" class="form-control expected-return" value="@Model.PortfolioItems[i].ExpectedReturn" />
-                                </td>
-                                <td>
-                                    <input type="number" step="0.01" name="PortfolioItems[@i].Weight" class="form-control weight" min="0" max="100" value="@Model.PortfolioItems[i].Weight" />
-                                </td>
-                                <td>
-                                    <input type="number" step="0.01" name="PortfolioItems[@i].StandardDeviation" min="0" max="100" class="form-control stddev" value="@Model.PortfolioItems[i].StandardDeviation" />
-                                </td>
-                                <td>
-                                    <button type="button" class="btn btn-danger btn-sm remove-row"><i class="bi bi-trash"></i></button>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="mb-3">
-                <button type="button" class="btn btn-outline-primary btn-sm" id="addAssetRow"><i class="bi bi-plus-lg"></i> Add Asset</button>
-            </div>
-
-            <div class="alert alert-secondary py-2 px-3" id="portfolioStats">
-                <div>Total Weight: <strong><span id="totalWeight">0</span>%</strong></div>
-                <div>Weighted Average Return: <strong><span id="averageReturn">0</span>%</strong></div>
-                <div>Portfolio Volatility (weighted): <strong><span id="calculatedVolatility">0</span>%</strong></div>
-            </div>
-
-
-        </div>
+        @await Html.PartialAsync("_InvestmentForm", Model)
+        @await Html.PartialAsync("_PortfolioTable", Model.PortfolioItems)
 
         <div class="mt-4 d-flex justify-content-end">
-            <button type="button"
+            <button type="submit"
                     id="simulateBtn"
                     class="btn btn-success btn-lg shadow-sm"
                     onclick="onSimulateClick()">
@@ -158,99 +35,7 @@
 
     @if (Model.Result != null)
     {
-        <div class="mt-5" id="results">
-            <h4><i class="bi bi-graph-up"></i> Simulation Results</h4>
-            @if (Model.Result.ReachedMaxValue)
-            {
-                <div class="alert alert-warning mt-3">
-                    <i class="bi bi-exclamation-triangle"></i>
-                    Some simulations have reached the maximum supported value for calculations.
-                    This may indicate extreme growth assumptions or a very long investment horizon.
-                    The final value has been capped at the technical limit of the system. Average and other values might be innacurate.
-                </div>
-            }
-
-            <div class="card border-primary mb-4">
-                <div class="card-body">
-                    <p class="mb-2">
-                        <strong>
-                            10th Percentile
-                            <i class="bi bi-info-circle text-secondary" data-bs-toggle="tooltip" title="10% of simulations ended below this value – it's a pessimistic scenario. In the chart, it's represented by a real trajectory closest to this value."></i>:
-                        </strong>
-                        @CurrencyFormatter.Format(Model.Result.Percentile10, Model.SelectedCurrency)
-                    </p>
-
-                    <p class="mb-2">
-                        <strong>
-                            Median (50th)
-                            <i class="bi bi-info-circle text-secondary" data-bs-toggle="tooltip" title="Half of the results are below this value. In the chart, the trajectory shown is the closest real simulation to this median."></i>:
-                        </strong>
-                        @CurrencyFormatter.Format(Model.Result.Percentile50, Model.SelectedCurrency)
-                    </p>
-
-                    <p class="mb-2">
-                        <strong>
-                            90th Percentile
-                            <i class="bi bi-info-circle text-secondary" data-bs-toggle="tooltip" title="90% of simulations ended below this value – it's an optimistic scenario. In the chart, it's a real trajectory closest to this value."></i>:
-                        </strong>
-                        @CurrencyFormatter.Format(Model.Result.Percentile90, Model.SelectedCurrency)
-                    </p>
-                    <p class="mb-2">
-                        <strong>
-                            Average
-                            <i class="bi bi-info-circle text-secondary" data-bs-toggle="tooltip" title="The arithmetic average of all simulation results. May differ from the median due to skewed distribution."></i>:
-                        </strong>
-                        @CurrencyFormatter.Format(Model.Result.AverageFinalValue, Model.SelectedCurrency)
-                    </p>
-
-                    @if (Model.Result.TargetReachedProbability.HasValue)
-                    {
-                        <p class="mb-0"><strong>Chance to reach target:</strong> @Model.Result.TargetReachedProbability.Value.ToString("0.0")%</p>
-                    }
-                </div>
-                <div class="alert alert-info mt-4">@Model.GetBehavioralCommentary()</div>
-            </div>
-
-            <div class="row gy-4">
-                <div class="col-lg-6">
-                    <div class="card">
-                        <div class="card-header">Distribution (Histogram)</div>
-                        <div class="card-body" id="histogramContainer" style="height: 400px;"></div>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="card">
-                        <div class="card-header">
-                            Sample Trajectories
-                            <i class="bi bi-info-circle text-secondary" data-bs-toggle="tooltip" title="These are actual simulation runs that are closest to the 10th, 50th and 90th percentile. They help visualize how the investment might evolve over time."></i>
-                        </div>
-                        <div class="card-body" id="trajectoryContainer" style="height: 400px;"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mt-4">
-                <h5>Detailed Percentiles</h5>
-                <table class="table table-bordered table-sm">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Scenario</th>
-                            <th>Percentile</th>
-                            <th>Final Value</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>Very Pessimistic</td><td>5th</td><td>@CurrencyFormatter.Format(Model.Result.Percentile5, Model.SelectedCurrency)</td></tr>
-                        <tr class="table-danger"><td>Pessimistic</td><td>10th</td><td>@CurrencyFormatter.Format(Model.Result.Percentile10, Model.SelectedCurrency)</td></tr>
-                        <tr><td>Below Median</td><td>25th</td><td>@CurrencyFormatter.Format(Model.Result.Percentile25, Model.SelectedCurrency)</td></tr>
-                        <tr class="table-info"><td>Median</td><td>50th</td><td>@CurrencyFormatter.Format(Model.Result.Percentile50, Model.SelectedCurrency)</td></tr>
-                        <tr><td>Above Median</td><td>75th</td><td>@CurrencyFormatter.Format(Model.Result.Percentile75, Model.SelectedCurrency)</td></tr>
-                        <tr class="table-success"><td>Optimistic</td><td>90th</td><td>@CurrencyFormatter.Format(Model.Result.Percentile90, Model.SelectedCurrency)</td></tr>
-                        <tr><td>Very Optimistic</td><td>95th</td><td>@CurrencyFormatter.Format(Model.Result.Percentile95, Model.SelectedCurrency)</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        @await Html.PartialAsync("_SimulationResults", Model)
     }
 </div>
 
@@ -264,9 +49,9 @@
 
     <script>
         window.predictionResult = @Html.Raw(
-        System.Text.Json.JsonSerializer.Serialize(
+        JsonSerializer.Serialize(
         Model.Result ?? new FinancePlanning.Application.DTOs.SimulationResultDto(),
-        new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }
+        new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }
         )
         );
     </script>
@@ -277,29 +62,19 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             initCurrencyDropdown();
-
             renderHistogram();
             renderTrajectories();
+            scrollToResultsIfAvailable();
+            initTooltips();
         });
-
-        function onSimulateClick() {
-            const form = document.getElementById('predictionForm');
-            const btn = document.getElementById('simulateBtn');
-            const spinner = document.getElementById('simulateSpinner');
-
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
-
-            btn.disabled = true;
-            spinner.classList.remove('d-none');
-            setTimeout(() => form.submit(), 50);
-        }
-
-        function updateSimulationValue(value) {
-            document.getElementById('simCountValue').innerText = value;
-            document.getElementById('simulationWarning').style.display = value > 5000 ? 'block' : 'none';
-        }
     </script>
+
+    <script>
+        window.predictionResult = @Html.Raw(JsonSerializer.Serialize(Model.Result ?? new(), new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
+        window.predictionResult.principal = @Model.Principal;
+        window.predictionResult.monthlyContribution = @Model.MonthlyContribution;
+        window.predictionResult.years = @Model.Years;
+    </script>
+
 }
+

@@ -2,9 +2,13 @@
 
 <div class="row gy-3">
 
+    <div class="col-12 mb-3">
+        <h5 class="border-bottom pb-2">Initial Investment Details</h5>
+    </div>
+
     <div class="col-md-6">
         <label asp-for="Principal" class="form-label">Initial Investment</label>
-        <input asp-for="Principal" class="form-control" type="number" step="0.01" min="0" />
+        <input asp-for="Principal" class="form-control" type="number" step="0.001" min="0" />
         <span asp-validation-for="Principal" class="text-danger small"></span>
     </div>
 
@@ -16,7 +20,7 @@
 
     <div class="col-md-4">
         <label asp-for="Years" class="form-label">Investment Horizon (Years)</label>
-        <input asp-for="Years" class="form-control" type="number" step="0.001" min="1" max="100" />
+        <input asp-for="Years" class="form-control" type="number" step="1" min="1" max="100" />
         <span asp-validation-for="Years" class="text-danger small"></span>
     </div>
 
@@ -27,6 +31,20 @@
         </label>
         <input asp-for="TotalExpenseRatio" class="form-control" type="number" step="0.001" max="100" min="0" />
         <span asp-validation-for="TotalExpenseRatio" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-4">
+        <label asp-for="Correlation" class="form-label">
+            Average Correlation
+            <i class="bi bi-info-circle text-secondary" data-bs-toggle="tooltip"
+               title="This value estimates how similarly the assets in your portfolio move. A higher number means assets tend to rise and fall together, which can increase risk. A lower number means they behave more independently, helping to spread risk."></i>
+        </label>
+        <input asp-for="Correlation" class="form-control" type="number" step="0.01" min="0" max="1" />
+        <span asp-validation-for="Correlation" class="text-danger small"></span>
+    </div>
+
+    <div class="col-12 mt-4 mb-3">
+        <h5 class="border-bottom pb-2">Simulation Settings</h5>
     </div>
 
     <div class="col-md-6">
@@ -41,6 +59,10 @@
         </div>
     </div>
 
+    <div class="col-12 mt-4 mb-3">
+        <h5 class="border-bottom pb-2">Optional Goals & Currency</h5>
+    </div>
+
     <div class="col-md-6">
         <label asp-for="TargetAmount" class="form-label">Target Amount (Optional)</label>
         <input asp-for="TargetAmount" class="form-control" type="number" step="0.001" />
@@ -53,5 +75,7 @@
         <span asp-validation-for="SelectedCurrency" class="text-danger small"></span>
     </div>
 
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div asp-validation-summary="ModelOnly" class="text-danger mt-2"></div>
+
 </div>
+

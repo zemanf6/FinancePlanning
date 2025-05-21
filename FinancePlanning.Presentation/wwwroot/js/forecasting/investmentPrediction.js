@@ -126,6 +126,28 @@ function renderTrajectories() {
         }
     ];
 
+    const principal = predictionResult.principal || 0;
+    const monthlyContribution = predictionResult.monthlyContribution || 0;
+
+    const ownContributions = [];
+    for (let i = 0; i < labels.length; i++) {
+        const year = i + 1;
+        const value = principal + monthlyContribution * year * 12;
+        ownContributions.push(value);
+    }
+
+    datasets.push({
+        label: "Own Contributions",
+        data: ownContributions,
+        borderColor: "#0d6efd",
+        borderWidth: 2,
+        borderDash: [5, 5],
+        tension: 0,
+        fill: false,
+        pointRadius: 0,
+        pointHoverRadius: 0
+    });
+
     container.innerHTML = "";
     const canvas = document.createElement("canvas");
     container.appendChild(canvas);
@@ -152,26 +174,6 @@ function renderTrajectories() {
                                 minimumFractionDigits: 0,
                                 maximumFractionDigits: 0
                             })}`;
-                        }
-                    }
-                },
-                annotation: {
-                    annotations: {
-                        medianLine: {
-                            type: 'line',
-                            yMin: trajectories.percentile50[trajectories.percentile50.length - 1],
-                            yMax: trajectories.percentile50[trajectories.percentile50.length - 1],
-                            borderColor: 'rgba(0, 0, 0, 0.5)',
-                            borderWidth: 1,
-                            borderDash: [4, 4],
-                            label: {
-                                display: true,
-                                content: 'Final Median',
-                                position: 'start',
-                                backgroundColor: 'rgba(255,255,255,0.7)',
-                                color: 'black',
-                                font: { size: 10 }
-                            }
                         }
                     }
                 },
@@ -220,11 +222,33 @@ function updateHiddenAsset(select) {
         hiddenInput.value = select.value;
     }
 }
+function onSimulateClick() {
+    const form = document.getElementById('predictionForm');
+    const btn = document.getElementById('simulateBtn');
+    const spinner = document.getElementById('simulateSpinner');
 
-function getColor(index) {
-    const colors = [
-        "#0d6efd", "#dc3545", "#198754", "#ffc107", "#6f42c1",
-        "#fd7e14", "#20c997", "#6610f2", "#d63384", "#0dcaf0"
-    ];
-    return colors[index % colors.length];
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+
+    btn.disabled = true;
+    spinner.classList.remove('d-none');
+    setTimeout(() => form.submit(), 50);
+}
+
+function updateSimulationValue(value) {
+    document.getElementById('simCountValue').innerText = value;
+    document.getElementById('simulationWarning').style.display = value > 5000 ? 'block' : 'none';
+}
+
+function scrollToResultsIfAvailable() {
+    const resultsSection = document.getElementById("results");
+    if (resultsSection) {
+        resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+}
+function initTooltips() {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
 }

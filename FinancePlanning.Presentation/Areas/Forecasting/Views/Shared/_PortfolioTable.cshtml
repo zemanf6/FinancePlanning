@@ -1,15 +1,35 @@
 ﻿@model IList<FinancePlanning.Presentation.Areas.Forecasting.ViewModels.PortfolioItemViewModel>
 
-<div class="table-responsive">
+<div class="table-responsive mt-5">
     <table id="portfolioTable" class="table table-bordered table-sm align-middle">
         <thead class="table-light">
             <tr>
                 <th>Asset Name</th>
-                <th>Pre-defined</th>
-                <th>Pre-defined volatility</th>
+
+                <th>
+                    Pre-defined
+                    <i class="bi bi-info-circle text-secondary ms-1"
+                       data-bs-toggle="tooltip"
+                       title="Choose from a list of standard assets with predefined return and volatility."></i>
+                </th>
+
+                <th>
+                    Pre-defined volatility
+                    <i class="bi bi-info-circle text-secondary ms-1"
+                       data-bs-toggle="tooltip"
+                       title="Select a volatility level to apply typical risk assumptions for the chosen asset."></i>
+                </th>
+
                 <th>Expected Return (%)</th>
                 <th>Weight (%)</th>
-                <th>Volatility (Std. Dev. %)</th>
+
+                <th>
+                    Volatility (Std. Dev. %)
+                    <i class="bi bi-info-circle text-secondary ms-1"
+                       data-bs-toggle="tooltip"
+                       title="Manually specify the expected standard deviation (volatility) of this asset."></i>
+                </th>
+
                 <th></th>
             </tr>
         </thead>
@@ -35,20 +55,30 @@
                         <input type="hidden" name="PortfolioItems[@i].AssetName" class="hidden-asset-name" value="@Model[i].AssetName" />
                     </td>
                     <td>
-                        <select class="form-select form-select-sm volatility-selector">
-                            <option value="balanced" selected>Balanced</option>
-                            <option value="conservative">Conservative</option>
-                            <option value="aggressive">Aggressive</option>
+                        @{
+                            string selectedVol = Model[i].SelectedVolatilityLevel ?? "balanced";
+
+                            string BuildOption(string value, string label)
+                            {
+                                string selected = value == selectedVol ? " selected=\"selected\"" : "";
+                                return $"<option value=\"{value}\"{selected}>{label}</option>";
+                            }
+                        }
+
+                        <select class="form-select form-select-sm volatility-selector" name="PortfolioItems[@i].SelectedVolatilityLevel">
+                            @Html.Raw(BuildOption("balanced", "Balanced"))
+                            @Html.Raw(BuildOption("conservative", "Conservative"))
+                            @Html.Raw(BuildOption("aggressive", "Aggressive"))
                         </select>
                     </td>
                     <td>
-                        <input type="number" step="0.01" name="PortfolioItems[@i].ExpectedReturn" min="-100" max="100" class="form-control expected-return" value="@Model[i].ExpectedReturn" />
+                        <input type="number" step="0.001" name="PortfolioItems[@i].ExpectedReturn" min="-100" max="100" class="form-control expected-return" value="@Model[i].ExpectedReturn" />
                     </td>
                     <td>
-                        <input type="number" step="0.01" name="PortfolioItems[@i].Weight" class="form-control weight" min="0" max="100" value="@Model[i].Weight" />
+                        <input type="number" step="0.001" name="PortfolioItems[@i].Weight" class="form-control weight" min="0" max="100" value="@Model[i].Weight" />
                     </td>
                     <td>
-                        <input type="number" step="0.01" name="PortfolioItems[@i].StandardDeviation" min="0" max="100" class="form-control stddev" value="@Model[i].StandardDeviation" />
+                        <input type="number" step="0.001" name="PortfolioItems[@i].StandardDeviation" min="0" max="100" class="form-control stddev" value="@Model[i].StandardDeviation" />
                     </td>
                     <td>
                         <button type="button" class="btn btn-danger btn-sm remove-row"><i class="bi bi-trash"></i></button>

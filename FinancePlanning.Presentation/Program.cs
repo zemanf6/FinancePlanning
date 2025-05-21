@@ -10,9 +10,14 @@ using FinancePlanning.Infrastructure.Services;
 using FinancePlanning.Infrastructure.Services.DTO;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var cultureInfo = new CultureInfo("en-US");
+CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -59,6 +64,13 @@ var currencies = JsonSerializer.Deserialize<Dictionary<string, CurrencyJsonDto>>
 builder.Services.AddSingleton<ICurrencyFormatter>(new CurrencyFormatter(currencies));
 
 var app = builder.Build();
+
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture(cultureInfo),
+    SupportedCultures = new List<CultureInfo> { cultureInfo },
+    SupportedUICultures = new List<CultureInfo> { cultureInfo }
+}); 
 
 using (var scope = app.Services.CreateScope())
 {

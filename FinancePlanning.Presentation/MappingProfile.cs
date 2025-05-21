@@ -34,6 +34,13 @@ namespace FinancePlanning.Application
             CreateMap<InvestmentPredictionViewModel, InvestmentPredictionDto>()
                 .ForMember(dest => dest.ExpectedReturn, opt => opt.MapFrom(src => src.CalculatedExpectedReturn))
                 .ForMember(dest => dest.StandardDeviation, opt => opt.MapFrom(src => src.CalculatedStandardDeviation));
+
+            CreateMap<InvestmentPredictionViewModel, InvestmentExportDto>()
+                .ForMember(dest => dest.ExpectedReturn, opt => opt.Ignore())
+                .ForMember(dest => dest.StandardDeviation, opt => opt.Ignore())
+                .ForMember(dest => dest.Result, opt => opt.Ignore());
+            CreateMap<PortfolioItemViewModel, PortfolioItemExportDto>();
+            CreateMap<InvestmentPredictionViewModel, InvestmentExportDto>();
         }
     }
 }

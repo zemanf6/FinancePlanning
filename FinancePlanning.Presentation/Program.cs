@@ -14,6 +14,7 @@ using System.Globalization;
 using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
+QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
 var cultureInfo = new CultureInfo("en-US");
 CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
@@ -53,7 +54,10 @@ builder.Services.AddScoped<ICompoundInterestCalculationRepository, CompoundInter
 builder.Services.AddScoped<ISimpleInterestStorageManager, SimpleInterestStorageManager>();
 builder.Services.AddScoped<ISimpleInterestCalculationRepository, SimpleInterestCalculationRepository>();
 builder.Services.AddScoped<IMonteCarloSimulator, MonteCarloSimulator>();
+builder.Services.AddScoped<IPdfExportManager, PdfExportManager>();
+builder.Services.AddScoped<IXmlExportManager, XmlExportManager>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
+builder.Services.AddSession();
 
 
 var env = builder.Environment;
@@ -70,7 +74,8 @@ app.UseRequestLocalization(new RequestLocalizationOptions
     DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture(cultureInfo),
     SupportedCultures = new List<CultureInfo> { cultureInfo },
     SupportedUICultures = new List<CultureInfo> { cultureInfo }
-}); 
+});
+app.UseSession();
 
 using (var scope = app.Services.CreateScope())
 {

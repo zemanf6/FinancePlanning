@@ -12,11 +12,15 @@ namespace FinancePlanning.Presentation.Areas.Forecasting.Controllers
     {
         private readonly IMonteCarloSimulator _simulator;
         private readonly IMapper _mapper;
+        private readonly IPdfExportManager _pdfExportManager;
+        private readonly IXmlExportManager _xmlExportManager;
 
-        public ForecastController(IMonteCarloSimulator simulator, IMapper mapper)
+        public ForecastController(IMonteCarloSimulator simulator, IMapper mapper, IPdfExportManager pdfExportManager, IXmlExportManager xmlExportManager)
         {
             _simulator = simulator;
             _mapper = mapper;
+            _pdfExportManager = pdfExportManager;
+            _xmlExportManager = xmlExportManager;
         }
 
         [HttpGet]
@@ -46,7 +50,54 @@ namespace FinancePlanning.Presentation.Areas.Forecasting.Controllers
 
             model.Result = result;
 
+            var resultJson = JsonSerializer.Serialize(result);
+            HttpContext.Session.SetString("LastSimulationResult", resultJson);
+
             return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ExportPdf(InvestmentPredictionViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return RedirectToAction(nameof(Index));
+
+            var resultJson = HttpContext.Session.GetString("LastSimulationResult");
+            if (string.IsNullOrWhiteSpace(resultJson))
+                return RedirectToAction(nameof(Index));
+
+            var result = JsonSerializer.Deserialize<SimulationResultDto>(resultJson);
+
+            var exportDto = _mapper.Map<InvestmentExportDto>(model);
+            exportDto.ExpectedReturn = model.CalculatedExpectedReturn;
+            exportDto.StandardDeviation = model.CalculatedStandardDeviation;
+            exportDto.Result = result;
+
+            var pdf = _pdfExportManager.GeneratePdf(exportDto);
+            return File(pdf, "application/pdf", "InvestmentReport.pdf");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ExportXml(InvestmentPredictionViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return RedirectToAction(nameof(Index));
+
+            var resultJson = HttpContext.Session.GetString("LastSimulationResult");
+            if (string.IsNullOrWhiteSpace(resultJson))
+                return RedirectToAction(nameof(Index));
+
+            var result = JsonSerializer.Deserialize<SimulationResultDto>(resultJson);
+
+            var exportDto = _mapper.Map<InvestmentExportDto>(model);
+            exportDto.ExpectedReturn = model.CalculatedExpectedReturn;
+            exportDto.StandardDeviation = model.CalculatedStandardDeviation;
+            exportDto.Result = result;
+
+            var xml = _xmlExportManager.GenerateXml(exportDto);
+            return File(xml, "application/xml", "InvestmentReport.xml");
         }
     }
 }

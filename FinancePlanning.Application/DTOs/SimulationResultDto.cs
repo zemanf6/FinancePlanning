@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace FinancePlanning.Application.DTOs
 {
@@ -10,6 +11,7 @@ namespace FinancePlanning.Application.DTOs
     {
         public List<decimal> FinalValues { get; set; } = new();
 
+        [XmlIgnore]
         public Dictionary<string, List<decimal>>? PercentileTrajectories { get; set; }
 
         public decimal Percentile5 { get; set; }

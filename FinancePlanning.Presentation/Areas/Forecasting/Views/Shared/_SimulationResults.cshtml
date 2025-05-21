@@ -1,61 +1,104 @@
 ﻿@model FinancePlanning.Presentation.Areas.Forecasting.ViewModels.InvestmentPredictionViewModel
 @inject FinancePlanning.Infrastructure.Interfaces.ICurrencyFormatter CurrencyFormatter
-@using System.Text.Json
 
 <div class="mt-5" id="results">
     <h4><i class="bi bi-graph-up"></i> Simulation Results</h4>
+
+    <div class="mt-3 d-flex gap-2">
+
+        <!-- Export to PDF -->
+        <form asp-action="ExportPdf" method="post">
+            @Html.AntiForgeryToken()
+
+            <!-- pouze vstupní parametry potřebné pro re-mapping -->
+            @Html.HiddenFor(m => m.Principal)
+            @Html.HiddenFor(m => m.MonthlyContribution)
+            @Html.HiddenFor(m => m.Years)
+            @Html.HiddenFor(m => m.TotalExpenseRatio)
+            @Html.HiddenFor(m => m.Correlation)
+            @Html.HiddenFor(m => m.SimulationsCount)
+            @Html.HiddenFor(m => m.TargetAmount)
+            @Html.HiddenFor(m => m.SelectedCurrency)
+
+            @for (int i = 0; i < Model.PortfolioItems.Count; i++)
+            {
+                <input type="hidden" name="PortfolioItems[@i].AssetName" value="@Model.PortfolioItems[i].AssetName" />
+                <input type="hidden" name="PortfolioItems[@i].ExpectedReturn" value="@Model.PortfolioItems[i].ExpectedReturn" />
+                <input type="hidden" name="PortfolioItems[@i].Weight" value="@Model.PortfolioItems[i].Weight" />
+                <input type="hidden" name="PortfolioItems[@i].StandardDeviation" value="@Model.PortfolioItems[i].StandardDeviation" />
+                <input type="hidden" name="PortfolioItems[@i].SelectedVolatilityLevel" value="@Model.PortfolioItems[i].SelectedVolatilityLevel" />
+            }
+
+            <button type="submit" class="btn btn-outline-primary">
+                <i class="bi bi-file-earmark-pdf"></i> Export to PDF
+            </button>
+        </form>
+
+        <!-- Export to XML -->
+        <form asp-action="ExportXml" method="post">
+            @Html.AntiForgeryToken()
+
+            @Html.HiddenFor(m => m.Principal)
+            @Html.HiddenFor(m => m.MonthlyContribution)
+            @Html.HiddenFor(m => m.Years)
+            @Html.HiddenFor(m => m.TotalExpenseRatio)
+            @Html.HiddenFor(m => m.Correlation)
+            @Html.HiddenFor(m => m.SimulationsCount)
+            @Html.HiddenFor(m => m.TargetAmount)
+            @Html.HiddenFor(m => m.SelectedCurrency)
+
+            @for (int i = 0; i < Model.PortfolioItems.Count; i++)
+            {
+                <input type="hidden" name="PortfolioItems[@i].AssetName" value="@Model.PortfolioItems[i].AssetName" />
+                <input type="hidden" name="PortfolioItems[@i].ExpectedReturn" value="@Model.PortfolioItems[i].ExpectedReturn" />
+                <input type="hidden" name="PortfolioItems[@i].Weight" value="@Model.PortfolioItems[i].Weight" />
+                <input type="hidden" name="PortfolioItems[@i].StandardDeviation" value="@Model.PortfolioItems[i].StandardDeviation" />
+                <input type="hidden" name="PortfolioItems[@i].SelectedVolatilityLevel" value="@Model.PortfolioItems[i].SelectedVolatilityLevel" />
+            }
+
+            <button type="submit" class="btn btn-outline-secondary">
+                <i class="bi bi-file-earmark-code"></i> Export to XML
+            </button>
+        </form>
+    </div>
 
     @if (Model.Result.ReachedMaxValue)
     {
         <div class="alert alert-warning mt-3">
             <i class="bi bi-exclamation-triangle"></i>
             Some simulations have reached the maximum supported value for calculations.
-            This may indicate extreme growth assumptions or a very long investment horizon.
-            The final value has been capped at the technical limit of the system. Average and other values might be inaccurate.
         </div>
     }
 
-    <div class="card border-primary mb-4">
+    <div class="card border-primary mb-4 mt-3">
         <div class="card-body">
             <p class="mb-2">
                 <strong>
                     @{
                         var contribution = Model.Principal + Model.MonthlyContribution * Model.Years * 12;
                     }
-
                     Own contributions:
                 </strong>
                 @CurrencyFormatter.Format(contribution, Model.SelectedCurrency)
             </p>
+
             <p class="mb-2">
-                <strong>
-                    10th Percentile
-                    <i class="bi bi-info-circle text-secondary" data-bs-toggle="tooltip" title="10% of simulations ended below this value – it's a pessimistic scenario. In the chart, it's represented by a real trajectory closest to this value."></i>:
-                </strong>
+                <strong>10th Percentile:</strong>
                 @CurrencyFormatter.Format(Model.Result.Percentile10, Model.SelectedCurrency)
             </p>
 
             <p class="mb-2">
-                <strong>
-                    Median (50th)
-                    <i class="bi bi-info-circle text-secondary" data-bs-toggle="tooltip" title="Half of the results are below this value. In the chart, the trajectory shown is the closest real simulation to this median."></i>:
-                </strong>
+                <strong>Median (50th):</strong>
                 @CurrencyFormatter.Format(Model.Result.Percentile50, Model.SelectedCurrency)
             </p>
 
             <p class="mb-2">
-                <strong>
-                    90th Percentile
-                    <i class="bi bi-info-circle text-secondary" data-bs-toggle="tooltip" title="90% of simulations ended below this value – it's an optimistic scenario. In the chart, it's a real trajectory closest to this value."></i>:
-                </strong>
+                <strong>90th Percentile:</strong>
                 @CurrencyFormatter.Format(Model.Result.Percentile90, Model.SelectedCurrency)
             </p>
 
             <p class="mb-2">
-                <strong>
-                    Average
-                    <i class="bi bi-info-circle text-secondary" data-bs-toggle="tooltip" title="The arithmetic average of all simulation results. May differ from the median due to skewed distribution."></i>:
-                </strong>
+                <strong>Average:</strong>
                 @CurrencyFormatter.Format(Model.Result.AverageFinalValue, Model.SelectedCurrency)
             </p>
 
@@ -76,10 +119,7 @@
         </div>
         <div class="col-lg-6">
             <div class="card">
-                <div class="card-header">
-                    Sample Trajectories
-                    <i class="bi bi-info-circle text-secondary" data-bs-toggle="tooltip" title="These are actual simulation runs that are closest to the 10th, 50th and 90th percentile. They help visualize how the investment might evolve over time."></i>
-                </div>
+                <div class="card-header">Sample Trajectories</div>
                 <div class="card-body" id="trajectoryContainer" style="height: 400px;"></div>
             </div>
         </div>

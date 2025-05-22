@@ -8,7 +8,7 @@ namespace FinancePlanning.Presentation.Areas.Calculators.ViewModels
     {
         [Required]
         [Display(Name = "Principal Amount")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "Enter a valid amount")]
+        [Range(0.01, 1000000000, ErrorMessage = "Enter an amount between 0.01 and 1 000 000 000")]
         public decimal Principal { get; set; }
 
         [Required]
@@ -18,12 +18,12 @@ namespace FinancePlanning.Presentation.Areas.Calculators.ViewModels
 
         [Required]
         [Display(Name = "Duration")]
-        [Range(1, 100, ErrorMessage = "Enter a duration between 1 and 100")]
+        [Range(1, 120, ErrorMessage = "Enter a duration between 1 and 100")]
         public int Duration { get; set; }
 
         [Required]
         [Display(Name = "Compoundings per Year")]
-        [Range(1, 365, ErrorMessage = "Must be at least once per year")]
+        [Range(1, 365)]
         public int? CompoundingPerYear { get; set; } = 1;
 
         [Required]

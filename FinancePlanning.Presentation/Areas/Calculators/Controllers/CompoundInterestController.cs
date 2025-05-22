@@ -56,18 +56,33 @@ namespace FinancePlanning.Presentation.Areas.Calculators.Controllers
             if (!ModelState.IsValid)
                 return View(viewModel);
 
-            var dto = _mapper.Map<CompoundInterestDto>(viewModel);
-            var result = _calculator.Calculate(dto);
-            var updatedViewModel = _mapper.Map<CompoundInterestViewModel>(result);
+            try
+            {
+                var dto = _mapper.Map<CompoundInterestDto>(viewModel);
+                var result = _calculator.Calculate(dto);
+                var updatedViewModel = _mapper.Map<CompoundInterestViewModel>(result);
 
-            updatedViewModel.ChartData = result.ChartData
-                .Cast<InterestChartStep>()
-                .Cast<object>()
-                .ToList();
+                updatedViewModel.ChartData = result.ChartData
+                    .Cast<InterestChartStep>()
+                    .Cast<object>()
+                    .ToList();
 
-            TempData["Result"] = JsonSerializer.Serialize(updatedViewModel);
+                TempData["Result"] = JsonSerializer.Serialize(updatedViewModel);
+            }
+            catch (OverflowException)
+            {
+                ModelState.AddModelError(string.Empty, "Calculation failed due to extremely large values. Try lowering the interest rate, duration or compounding frequency.");
+                return View(viewModel);
+            }
+            catch
+            {
+                ModelState.AddModelError(string.Empty, "Unexpected error occurred during calculation. Please try again.");
+                return View(viewModel);
+            }
+
             return RedirectToAction("Index");
         }
+
 
         [HttpPost]
         [Authorize]

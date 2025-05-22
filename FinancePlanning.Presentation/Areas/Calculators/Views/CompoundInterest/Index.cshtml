@@ -13,6 +13,16 @@
 <div class="container mt-4">
     <h2 class="mb-4">Simple Interest Calculator</h2>
 
+    @if (!ViewData.ModelState.IsValid && ViewData.ModelState[string.Empty]?.Errors.Count > 0)
+    {
+        <div class="alert alert-danger">
+            @foreach (var error in ViewData.ModelState[string.Empty]!.Errors)
+            {
+                <p>@error.ErrorMessage</p>
+            }
+        </div>
+    }
+
     @if (TempData["Success"] is string successMessage)
     {
         <div class="alert alert-success alert-dismissible fade show" role="alert">

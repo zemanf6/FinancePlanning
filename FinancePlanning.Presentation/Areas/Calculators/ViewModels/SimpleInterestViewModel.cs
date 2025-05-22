@@ -8,7 +8,7 @@ namespace FinancePlanning.Presentation.Areas.Calculators.ViewModels
     {
         [Required]
         [Display(Name = "Principal Amount")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "Enter a valid amount")]
+        [Range(0.01, 1000000000, ErrorMessage = "Enter a valid amount")]
         public decimal Principal { get; set; }
 
         [Required]
@@ -18,7 +18,7 @@ namespace FinancePlanning.Presentation.Areas.Calculators.ViewModels
 
         [Required]
         [Display(Name = "Duration")]
-        [Range(1, 100, ErrorMessage = "Enter a duration between 1 and 100")]
+        [Range(1, 120, ErrorMessage = "Enter a duration between 1 and 100")]
         public int Duration { get; set; }
 
         [Display(Name = "Interest Frequency")]

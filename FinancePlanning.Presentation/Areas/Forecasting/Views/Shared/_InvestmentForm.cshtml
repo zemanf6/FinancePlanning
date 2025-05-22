@@ -27,7 +27,7 @@
     <div class="col-md-4">
         <label asp-for="TotalExpenseRatio" class="form-label">
             TER (%)
-            <i class="bi bi-info-circle text-secondary" data-bs-toggle="tooltip" title="TER (Total Expense Ratio) reduces the expected return in this simulation. In real-world scenarios, actual fees may be calculated differently."></i>
+            <i class="bi bi-info-circle text-secondary" data-bs-toggle="tooltip" title="TER (Total Expense Ratio) reduces the expected return and reflects annual portfolio management costs such as fund fees. Entered as a percentage."></i>
         </label>
         <input asp-for="TotalExpenseRatio" class="form-control" type="number" step="0.001" max="100" min="0" />
         <span asp-validation-for="TotalExpenseRatio" class="text-danger small"></span>

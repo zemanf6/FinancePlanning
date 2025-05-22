@@ -41,25 +41,22 @@
 
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")
-
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0/dist/chartjs-plugin-annotation.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
 
     <script>
-        window.predictionResult = @Html.Raw(
-        JsonSerializer.Serialize(
-        Model.Result ?? new FinancePlanning.Application.DTOs.SimulationResultDto(),
-        new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }
-        )
-        );
-    </script>
+        // Jediná definice initTooltips
+        function initTooltips() {
+            const triggers = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            triggers.forEach(el => new bootstrap.Tooltip(el, {
+                container: 'body',
+                boundary: 'window',
+                placement: 'auto'
+            }));
+        }
 
-    <script src="~/js/forecasting/portfolio.js"></script>
-    <script src="~/js/forecasting/investmentPrediction.js"></script>
-
-    <script>
         document.addEventListener('DOMContentLoaded', () => {
             initCurrencyDropdown();
             renderHistogram();
@@ -67,14 +64,12 @@
             scrollToResultsIfAvailable();
             initTooltips();
         });
+
+        window.predictionResult = @Html.Raw(
+        JsonSerializer.Serialize(Model.Result ?? new(), new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase })
+        );
     </script>
 
-    <script>
-        window.predictionResult = @Html.Raw(JsonSerializer.Serialize(Model.Result ?? new(), new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
-        window.predictionResult.principal = @Model.Principal;
-        window.predictionResult.monthlyContribution = @Model.MonthlyContribution;
-        window.predictionResult.years = @Model.Years;
-    </script>
-
+    <script src="~/js/forecasting/portfolio.js"></script>
+    <script src="~/js/forecasting/investmentPrediction.js"></script>
 }
-

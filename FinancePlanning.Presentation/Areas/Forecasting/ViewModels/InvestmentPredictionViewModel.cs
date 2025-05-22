@@ -36,6 +36,11 @@ namespace FinancePlanning.Presentation.Areas.Forecasting.ViewModels
         [Display(Name = "Average Correlation")]
         public decimal Correlation { get; set; } = 0.2m;
 
+        [Display(Name = "Inflation Rate (%)")]
+        [Range(0, 100, ErrorMessage = "Inflation must be between 0% and 100%.")]
+        public decimal InflationRate { get; set; } = 0.0m;
+
+
         [Display(Name = "Calculated Expected Return")]
         public decimal CalculatedExpectedReturn
         {

@@ -98,9 +98,7 @@ using (var scope = app.Services.CreateScope())
         var newAdmin = new ApplicationUser
         {
             UserName = adminEmail,
-            Email = adminEmail,
-            FirstName = "Admin",
-            LastName = "Uživatel"
+            Email = adminEmail
         };
         if ((await userManager.CreateAsync(newAdmin, adminPassword)).Succeeded)
         {

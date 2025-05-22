@@ -43,6 +43,16 @@
         <span asp-validation-for="Correlation" class="text-danger small"></span>
     </div>
 
+    <div class="col-md-4">
+        <label asp-for="InflationRate" class="form-label">
+            Inflation Rate (%)
+            <i class="bi bi-info-circle text-secondary" data-bs-toggle="tooltip"
+               title="Estimated annual inflation rate. Used to calculate real (inflation-adjusted) values in the simulation."></i>
+        </label>
+        <input asp-for="InflationRate" class="form-control" type="number" step="0.001" min="0" max="100" />
+        <span asp-validation-for="InflationRate" class="text-danger small"></span>
+    </div>
+
     <div class="col-12 mt-4 mb-3">
         <h5 class="border-bottom pb-2">Simulation Settings</h5>
     </div>

@@ -41,6 +41,8 @@ namespace FinancePlanning.Application
                 .ForMember(dest => dest.Result, opt => opt.Ignore());
             CreateMap<PortfolioItemViewModel, PortfolioItemExportDto>();
             CreateMap<InvestmentPredictionViewModel, InvestmentExportDto>();
+            CreateMap<SavedCompoundInterest, CompoundInterestExportDto>();
+            CreateMap<SavedSimpleInterest, SimpleInterestExportDto>();
         }
     }
 }

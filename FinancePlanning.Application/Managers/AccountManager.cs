@@ -14,14 +14,20 @@ public class AccountManager : IAccountManager
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IMapper _mapper;
+    private readonly ISimpleInterestStorageManager _simpleStorage;
+    private readonly ICompoundInterestStorageManager _compoundStorage;
 
     public AccountManager(UserManager<ApplicationUser> userManager,
                           SignInManager<ApplicationUser> signInManager,
-                          IMapper mapper)
+                          IMapper mapper,
+                          ISimpleInterestStorageManager simpleStorage,
+                          ICompoundInterestStorageManager compoundStorage)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _mapper = mapper;
+        _simpleStorage = simpleStorage;
+        _compoundStorage = compoundStorage;
     }
 
     public async Task<(bool Success, string? Error)> LoginAsync(string email, string password, bool rememberMe)
@@ -107,16 +113,27 @@ public class AccountManager : IAccountManager
         if (user == null)
             throw new InvalidOperationException("User not found.");
 
-        var dto = _mapper.Map<ProfileDto>(user);
+        var simple = await _simpleStorage.GetSavedCalculationsAsync(principal);
+        var compound = await _compoundStorage.GetSavedCalculationsAsync(principal);
 
-        var json = JsonSerializer.Serialize(dto, new JsonSerializerOptions
+        var export = new ProfileExportDto
+        {
+            Email = user.Email ?? "",
+            SimpleInterestCalculations = simple
+                .Select(x => _mapper.Map<SimpleInterestExportDto>(x))
+                .ToList(),
+            CompoundInterestCalculations = compound
+                .Select(x => _mapper.Map<CompoundInterestExportDto>(x))
+                .ToList()
+        };
+
+        var json = JsonSerializer.Serialize(export, new JsonSerializerOptions
         {
             WriteIndented = true
         });
 
         var fileName = $"profile-data-{user.Email}.json";
-        var fileBytes = Encoding.UTF8.GetBytes(json);
-
-        return (fileBytes, fileName);
+        return (Encoding.UTF8.GetBytes(json), fileName);
     }
+
 }

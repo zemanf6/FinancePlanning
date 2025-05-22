@@ -3,10 +3,9 @@ using FinancePlanning.Application.Interfaces;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 
-
 namespace FinancePlanning.Application.Managers
 {
-    public class PdfExportManager: IPdfExportManager
+    public class PdfExportManager : IPdfExportManager
     {
         public byte[] GeneratePdf(InvestmentExportDto dto)
         {
@@ -53,6 +52,9 @@ namespace FinancePlanning.Application.Managers
 
                             table.Cell().Text("Volatility (Std. Dev.)").SemiBold();
                             table.Cell().Text($"{dto.StandardDeviation:F2}%");
+
+                            table.Cell().Text("Inflation Rate").SemiBold();
+                            table.Cell().Text($"{dto.Result?.InflationRate:F2}%");
                         });
 
                         col.Item().Text("Portfolio Allocation").FontSize(14).Bold();
@@ -119,6 +121,27 @@ namespace FinancePlanning.Application.Managers
                                 }
                             });
 
+                            col.Item().Text("Results Adjusted for Inflation").FontSize(14).Bold();
+                            col.Item().Table(table =>
+                            {
+                                table.ColumnsDefinition(c =>
+                                {
+                                    c.RelativeColumn();
+                                    c.RelativeColumn();
+                                });
+
+                                void AddReal(string label, decimal? val)
+                                {
+                                    table.Cell().Text(label).SemiBold();
+                                    table.Cell().Text(val.HasValue ? $"{val:F2} {dto.SelectedCurrency}" : "-");
+                                }
+
+                                AddReal("10th Percentile (Real)", dto.Result.RealPercentile10);
+                                AddReal("Median (50th) (Real)", dto.Result.RealPercentile50);
+                                AddReal("90th Percentile (Real)", dto.Result.RealPercentile90);
+                                AddReal("Average (Real)", dto.Result.RealAverageFinalValue);
+                            });
+
                             if (dto.Result.ReachedMaxValue)
                             {
                                 col.Item().PaddingTop(10).Text("⚠ Some simulations reached the system limit. Results may be capped.").FontColor(Colors.Orange.Darken2);
@@ -130,6 +153,5 @@ namespace FinancePlanning.Application.Managers
                 });
             }).GeneratePdf();
         }
-
     }
 }

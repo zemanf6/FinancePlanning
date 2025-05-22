@@ -1,8 +1,78 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Finance Planner";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold">Finance Planning Tool</h1>
+        <p class="lead text-muted">Build your portfolio, simulate investment outcomes, and calculate future value with confidence.</p>
+        <div class="d-flex justify-content-center gap-3 mt-4">
+            <a class="btn btn-success btn-lg shadow" asp-area="Forecasting" asp-controller="Forecast" asp-action="Index">
+                <i class="bi bi-bar-chart-line"></i> Start Forecasting
+            </a>
+            <a class="btn btn-outline-primary btn-lg shadow" asp-area="Calculators" asp-controller="SimpleInterest" asp-action="Index">
+                <i class="bi bi-cash-coin"></i> Simple Interest
+            </a>
+            <a class="btn btn-outline-secondary btn-lg shadow" asp-area="Calculators" asp-controller="CompoundInterest" asp-action="Index">
+                <i class="bi bi-graph-up"></i> Compound Interest
+            </a>
+        </div>
+        @if (User.Identity?.IsAuthenticated ?? false)
+        {
+            <p class="text-muted mt-4">
+                <i class="bi bi-bookmark-check"></i> Your interest calculator results can be saved and revisited anytime.
+            </p>
+        }
+        else
+        {
+            <p class="text-muted mt-4">
+                <i class="bi bi-box-arrow-in-right"></i> Sign in to save your interest calculator results for later use.
+            </p>
+        }
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-graph-up-arrow display-5 text-primary mb-3"></i>
+                    <h5 class="card-title">Investment Forecasting</h5>
+                    <p class="card-text">Use Monte Carlo simulation to estimate potential future values of your investments under uncertainty.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-cash-stack display-5 text-success mb-3"></i>
+                    <h5 class="card-title">Interest Calculators</h5>
+                    <p class="card-text">Quickly compute growth with simple or compound interest and understand the power of time and reinvestment.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-file-earmark-arrow-down display-5 text-secondary mb-3"></i>
+                    <h5 class="card-title">Export Your Results</h5>
+                    <p class="card-text">Download PDF or XML reports of your inputs and simulation results for sharing or archiving.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-light rounded p-4 shadow-sm">
+        <h4 class="fw-semibold mb-3"><i class="bi bi-info-circle"></i> How It Works</h4>
+        <p class="mb-2">1. Enter your financial data such as investment amount, monthly contributions, and expected return.</p>
+        <p class="mb-2">2. Select either a quick calculator or run a Monte Carlo simulation to predict future outcomes.</p>
+        <p class="mb-2">3. Review the charts and percentiles that reflect different market scenarios, adjusted optionally for inflation.</p>
+        <p class="mb-2">4. Export your forecast results anytime. Sign in only if you wish to save interest calculator inputs for later use.</p>
+        <p class="text-muted mb-0">
+            This tool helps you make informed decisions about your long-term financial planning — with clarity and simplicity.
+            <br />
+            <small class="text">
+                Note: Simulated outcomes are based on probabilistic models and assumptions. Past performance does not guarantee future results.
+            </small>
+        </p>
+    </div>
 </div>

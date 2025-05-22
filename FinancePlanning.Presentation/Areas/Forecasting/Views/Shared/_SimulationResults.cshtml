@@ -5,12 +5,8 @@
     <h4><i class="bi bi-graph-up"></i> Simulation Results</h4>
 
     <div class="mt-3 d-flex gap-2">
-
-        <!-- Export to PDF -->
         <form asp-action="ExportPdf" method="post">
             @Html.AntiForgeryToken()
-
-            <!-- pouze vstupní parametry potřebné pro re-mapping -->
             @Html.HiddenFor(m => m.Principal)
             @Html.HiddenFor(m => m.MonthlyContribution)
             @Html.HiddenFor(m => m.Years)
@@ -19,6 +15,7 @@
             @Html.HiddenFor(m => m.SimulationsCount)
             @Html.HiddenFor(m => m.TargetAmount)
             @Html.HiddenFor(m => m.SelectedCurrency)
+            @Html.HiddenFor(m => m.InflationRate)
 
             @for (int i = 0; i < Model.PortfolioItems.Count; i++)
             {
@@ -34,10 +31,8 @@
             </button>
         </form>
 
-        <!-- Export to XML -->
         <form asp-action="ExportXml" method="post">
             @Html.AntiForgeryToken()
-
             @Html.HiddenFor(m => m.Principal)
             @Html.HiddenFor(m => m.MonthlyContribution)
             @Html.HiddenFor(m => m.Years)
@@ -46,6 +41,7 @@
             @Html.HiddenFor(m => m.SimulationsCount)
             @Html.HiddenFor(m => m.TargetAmount)
             @Html.HiddenFor(m => m.SelectedCurrency)
+            @Html.HiddenFor(m => m.InflationRate)
 
             @for (int i = 0; i < Model.PortfolioItems.Count; i++)
             {
@@ -72,6 +68,12 @@
 
     <div class="card border-primary mb-4 mt-3">
         <div class="card-body">
+            <h4>
+                <i class="bi bi-currency-dollar"></i> Nominal Results
+                <i class="bi bi-info-circle text-secondary ms-1" data-bs-toggle="tooltip"
+                   title="Nominal results represent values before inflation adjustment. These are used for the chart and commentary."></i>
+            </h4>
+
             <p class="mb-2">
                 <strong>
                     @{
@@ -82,44 +84,53 @@
                 @CurrencyFormatter.Format(contribution, Model.SelectedCurrency)
             </p>
 
-            <p class="mb-2">
-                <strong>10th Percentile:</strong>
-                @CurrencyFormatter.Format(Model.Result.Percentile10, Model.SelectedCurrency)
-            </p>
-
-            <p class="mb-2">
-                <strong>Median (50th):</strong>
-                @CurrencyFormatter.Format(Model.Result.Percentile50, Model.SelectedCurrency)
-            </p>
-
-            <p class="mb-2">
-                <strong>90th Percentile:</strong>
-                @CurrencyFormatter.Format(Model.Result.Percentile90, Model.SelectedCurrency)
-            </p>
-
-            <p class="mb-2">
-                <strong>Average:</strong>
-                @CurrencyFormatter.Format(Model.Result.AverageFinalValue, Model.SelectedCurrency)
-            </p>
+            <p class="mb-2"><strong>10th Percentile:</strong> @CurrencyFormatter.Format(Model.Result.Percentile10, Model.SelectedCurrency)</p>
+            <p class="mb-2"><strong>Median (50th):</strong> @CurrencyFormatter.Format(Model.Result.Percentile50, Model.SelectedCurrency)</p>
+            <p class="mb-2"><strong>90th Percentile:</strong> @CurrencyFormatter.Format(Model.Result.Percentile90, Model.SelectedCurrency)</p>
+            <p class="mb-2"><strong>Average:</strong> @CurrencyFormatter.Format(Model.Result.AverageFinalValue, Model.SelectedCurrency)</p>
 
             @if (Model.Result.TargetReachedProbability.HasValue)
             {
                 <p class="mb-0"><strong>Chance to reach target:</strong> @Model.Result.TargetReachedProbability.Value.ToString("0.0")%</p>
             }
+
+            <div class="alert alert-info mt-4">@Model.GetBehavioralCommentary()</div>
         </div>
-        <div class="alert alert-info mt-4">@Model.GetBehavioralCommentary()</div>
+    </div>
+
+    <div class="card border-secondary mb-4">
+        <div class="card-body">
+            <h5>
+                <i class="bi bi-graph-down-arrow"></i> Real Results (Adjusted for Inflation)
+                <i class="bi bi-info-circle text-secondary ms-1" data-bs-toggle="tooltip"
+                   title="These values are adjusted for inflation and represent the purchasing power of the future amount."></i>
+            </h5>
+
+            <p class="mb-2"><strong>Real 10th Percentile:</strong> @CurrencyFormatter.Format(Model.Result.RealPercentile10, Model.SelectedCurrency)</p>
+            <p class="mb-2"><strong>Real Median (50th):</strong> @CurrencyFormatter.Format(Model.Result.RealPercentile50, Model.SelectedCurrency)</p>
+            <p class="mb-2"><strong>Real 90th Percentile:</strong> @CurrencyFormatter.Format(Model.Result.RealPercentile90, Model.SelectedCurrency)</p>
+            <p class="mb-2"><strong>Real Average:</strong> @CurrencyFormatter.Format(Model.Result.RealAverageFinalValue, Model.SelectedCurrency)</p>
+        </div>
     </div>
 
     <div class="row gy-4">
         <div class="col-lg-6">
             <div class="card">
-                <div class="card-header">Distribution (Histogram)</div>
+                <div class="card-header">
+                    Distribution (Histogram)
+                    <i class="bi bi-info-circle text-secondary ms-1" data-bs-toggle="tooltip"
+                       title="The chart shows the spread of all final investment values before inflation."></i>
+                </div>
                 <div class="card-body" id="histogramContainer" style="height: 400px;"></div>
             </div>
         </div>
         <div class="col-lg-6">
             <div class="card">
-                <div class="card-header">Sample Trajectories</div>
+                <div class="card-header">
+                    Sample Trajectories
+                    <i class="bi bi-info-circle text-secondary ms-1" data-bs-toggle="tooltip"
+                       title="These trajectories represent example paths of investment before inflation. Real results are typically lower."></i>
+                </div>
                 <div class="card-body" id="trajectoryContainer" style="height: 400px;"></div>
             </div>
         </div>

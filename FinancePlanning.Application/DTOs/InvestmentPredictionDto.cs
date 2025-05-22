@@ -21,5 +21,6 @@ namespace FinancePlanning.Application.DTOs
         public decimal ExpectedReturn { get; set; }
         public decimal StandardDeviation { get; set; }
         public decimal Correlation { get; set; } = 0.2m;
+        public decimal InflationRate { get; set; }
     }
 }

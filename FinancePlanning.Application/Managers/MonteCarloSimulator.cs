@@ -63,6 +63,13 @@ namespace FinancePlanning.Application.Managers
                 AverageFinalValue = SafeAverage(finalResults, out bool overflowed)
             };
 
+            var realFinals = AdjustForInflation(finalResults, input.InflationRate, input.Years);
+
+            result.RealPercentile10 = realFinals[(int)(0.10 * (realFinals.Count - 1))];
+            result.RealPercentile50 = realFinals[(int)(0.50 * (realFinals.Count - 1))];
+            result.RealPercentile90 = realFinals[(int)(0.90 * (realFinals.Count - 1))];
+            result.RealAverageFinalValue = SafeAverage(realFinals, out _);
+
             if (overflowed) result.ReachedMaxValue = true;
 
             if (input.TargetAmount.HasValue)
@@ -114,10 +121,8 @@ namespace FinancePlanning.Application.Managers
                 var simulatedReturn = GetRandomReturn(meanAnnualReturn, stdDeviation);
                 var monthlyReturn = Math.Exp((double)simulatedReturn / 12.0) - 1;
 
-                // Clamp to avoid numerical blowups
                 monthlyReturn = Math.Clamp(monthlyReturn, -0.99, 1.0);
 
-                // Apply both return and TER in one logarithmic step
                 logValue += Math.Log((1.0 + monthlyReturn) * (1.0 - (double)monthlyTER));
 
                 double nextValue = Math.Exp(logValue);
@@ -181,6 +186,21 @@ namespace FinancePlanning.Application.Managers
             }
 
             return closestIndex;
+        }
+
+        private static List<decimal> AdjustForInflation(List<decimal> values, decimal inflationRate, decimal years)
+        {
+            if (inflationRate <= 0 || years <= 0)
+                return values;
+
+            decimal inflationFactor = 1 + inflationRate / 100m;
+            decimal divisor = Pow(inflationFactor, (int)years);
+
+            return values.Select(v => v / divisor).ToList();
+        }
+        private static decimal Pow(decimal value, int exponent)
+        {
+            return (decimal)Math.Pow((double)value, exponent);
         }
     }
 }

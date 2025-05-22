@@ -28,6 +28,11 @@ namespace FinancePlanning.Application.DTOs
 
         public string? Recommendation { get; set; }
         public bool ReachedMaxValue { get; set; }
+        public decimal RealPercentile10 { get; set; }
+        public decimal RealPercentile50 { get; set; }
+        public decimal RealPercentile90 { get; set; }
+        public decimal RealAverageFinalValue { get; set; }
+        public decimal InflationRate { get; set; }
     }
 
 }

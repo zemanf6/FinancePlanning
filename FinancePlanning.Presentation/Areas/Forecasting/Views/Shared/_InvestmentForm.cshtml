@@ -8,13 +8,13 @@
 
     <div class="col-md-6">
         <label asp-for="Principal" class="form-label">Initial Investment</label>
-        <input asp-for="Principal" class="form-control" type="number" step="0.001" min="0" />
+        <input asp-for="Principal" class="form-control" type="number" step="0.001" min="0" max="1000000000000" />
         <span asp-validation-for="Principal" class="text-danger small"></span>
     </div>
 
     <div class="col-md-6">
         <label asp-for="MonthlyContribution" class="form-label">Monthly Contribution</label>
-        <input asp-for="MonthlyContribution" class="form-control" type="number" step="0.001" min="0" />
+        <input asp-for="MonthlyContribution" class="form-control" type="number" step="0.001" min="0" max="1000000000" />
         <span asp-validation-for="MonthlyContribution" class="text-danger small"></span>
     </div>
 

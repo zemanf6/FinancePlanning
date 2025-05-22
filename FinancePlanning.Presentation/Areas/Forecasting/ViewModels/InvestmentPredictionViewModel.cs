@@ -7,11 +7,11 @@ namespace FinancePlanning.Presentation.Areas.Forecasting.ViewModels
     public class InvestmentPredictionViewModel : IValidatableObject
     {
         [Required]
-        [Range(0, double.MaxValue)]
+        [Range(0, 1000000000000)]
         public decimal Principal { get; set; }
 
         [Required]
-        [Range(0, double.MaxValue)]
+        [Range(0, 1000000000)]
         public decimal MonthlyContribution { get; set; }
 
         [Required]

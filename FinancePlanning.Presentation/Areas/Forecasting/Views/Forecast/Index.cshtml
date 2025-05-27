@@ -47,7 +47,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
 
     <script>
-        // Jediná definice initTooltips
         function initTooltips() {
             const triggers = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
             triggers.forEach(el => new bootstrap.Tooltip(el, {
@@ -65,9 +64,10 @@
             initTooltips();
         });
 
-        window.predictionResult = @Html.Raw(
-        JsonSerializer.Serialize(Model.Result ?? new(), new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase })
-        );
+        window.predictionResult = @Html.Raw(JsonSerializer.Serialize(Model.Result ?? new(), new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
+        window.predictionResult.principal = @Model.Principal;
+        window.predictionResult.monthlyContribution = @Model.MonthlyContribution;
+        window.predictionResult.years = @Model.Years;
     </script>
 
     <script src="~/js/forecasting/portfolio.js"></script>

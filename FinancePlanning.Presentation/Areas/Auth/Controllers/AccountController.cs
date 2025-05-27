@@ -137,7 +137,7 @@ public class AccountController : Controller
         var token = await _accountManager.GeneratePasswordResetTokenAsync(user);
         var callbackUrl = Url.Action("ResetPassword", "Account", new { email = user.Email, token }, Request.Scheme);
 
-        TempData["Message"] = $"Password reset link: {callbackUrl}";
+        TempData["Message"] = $"Password reset link: {callbackUrl} (Použito, aby bylo možné aplikaci lépe testovat bez nutnosti zakládat milion e-mailů. Po obhajobě přidám e-mail server.)";
         //
         return RedirectToAction("Login");
     }

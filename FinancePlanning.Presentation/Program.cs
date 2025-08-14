@@ -89,8 +89,10 @@ using (var scope = app.Services.CreateScope())
             await roleManager.CreateAsync(new IdentityRole(role));
     }
 
+    // Pro snadné vyzkoušení admin rozhraní
     var adminEmail = "admin@example.com";
     var adminPassword = "Admin123!";
+    //
 
     var admin = await userManager.FindByEmailAsync(adminEmail);
     if (admin == null)

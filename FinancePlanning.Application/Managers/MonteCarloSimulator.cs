@@ -196,7 +196,7 @@ namespace FinancePlanning.Application.Managers
             decimal inflationFactor = 1 + inflationRate / 100m;
             decimal divisor = Pow(inflationFactor, (int)years);
 
-            return values.Select(v => v / divisor).ToList();
+            return values.Select(v => v / divisor).ToList(); //
         }
         private static decimal Pow(decimal value, int exponent)
         {

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FinancePlanning.Application.DTOs;
 using FinancePlanning.Application.Interfaces;
+using FinancePlanning.Application.Managers;
 using FinancePlanning.Presentation.Areas.Auth.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,6 +26,8 @@ public class AccountController : Controller
     public IActionResult Login()
     {
         return View();
+
+        ViewData["Ahoj"] = 1234;
     }
 
     [AllowAnonymous]
